@@ -239,7 +239,9 @@
           "WHATSAPP_CLOUD": "WhatsApp Cloud",
           "WHATSAPP_CLOUD_DESC": "Quick setup through Meta",
           "TWILIO_DESC": "Connect via Twilio credentials",
-          "360_DIALOG": "360Dialog"
+          "360_DIALOG": "360Dialog",
+          "EVOLUTION_API": "Evolution API",
+          "EVOLUTION_API_DESC": "Connect via Evolution API instance"
         },
         "SELECT_PROVIDER": {
           "TITLE": "Select your API provider",
@@ -313,6 +315,15 @@
         },
         "API": {
           "ERROR_MESSAGE": "We were not able to save the WhatsApp channel"
+        },
+        "EVOLUTION_API": {
+          "INSTANCE_NAME_LABEL": "Instance name",
+          "INSTANCE_NAME_PLACEHOLDER": "Your Evolution API instance name",
+          "INSTANCE_NAME_ERROR": "Instance name is required",
+          "API_BASE_URL_LABEL": "API base URL (optional)",
+          "API_BASE_URL_PLACEHOLDER": "https://your-evolution-api.com",
+          "WEBHOOK_TITLE": "Webhook URL",
+          "WEBHOOK_DESCRIPTION": "Configure this URL in your Evolution API instance. Enable at least the MESSAGES_UPSERT event."
         }
       },
       "VOICE": {
