@@ -17,17 +17,28 @@ class Webhooks::EvolutionEventsJob < ApplicationJob
 
     event = payload['event'].presence || payload[:event].presence
     unless MESSAGES_UPSERT_EVENTS.include?(event.to_s)
+      Rails.logger.debug("EvolutionEventsJob: ignoring event=#{event.inspect} (expected #{MESSAGES_UPSERT_EVENTS})")
       return
     end
 
     data = payload['data'].presence || payload[:data].presence
-    return if data.blank?
+    if data.blank?
+      Rails.logger.warn("EvolutionEventsJob: payload has no data")
+      return
+    end
 
     # Skip messages sent by us (echo); optional: handle as outgoing_echo later
     key = data['key'].presence || data[:key].presence
-    return if key && (key['fromMe'] || key[:fromMe])
+    if key && (key['fromMe'] || key[:fromMe])
+      Rails.logger.debug("EvolutionEventsJob: skipping fromMe message")
+      return
+    end
 
+    Rails.logger.info("EvolutionEventsJob: processing incoming message for channel #{channel_id}")
     Whatsapp::IncomingMessageEvolutionService.new(inbox: channel.inbox, params: payload).perform
+  rescue StandardError => e
+    Rails.logger.error("EvolutionEventsJob failed: #{e.class} #{e.message}\n#{e.backtrace.first(10).join("\n")}")
+    raise
   end
 
   private

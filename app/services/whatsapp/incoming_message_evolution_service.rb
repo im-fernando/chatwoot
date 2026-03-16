@@ -21,9 +21,9 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
     push_name = data['pushName'].presence || data[:pushName].presence || from_number
 
     message_hash = build_message_hash(key, from_number, ev_type, msg)
-    contacts_hash = [{ wa_id: from_number, profile: { name: push_name } }].with_indifferent_access
+    contacts_hash = [{ wa_id: from_number, profile: { name: push_name } }.with_indifferent_access]
 
-    { messages: [message_hash].with_indifferent_access, contacts: contacts_hash }.with_indifferent_access
+    { messages: [message_hash], contacts: contacts_hash }.with_indifferent_access
   end
 
   def get_data

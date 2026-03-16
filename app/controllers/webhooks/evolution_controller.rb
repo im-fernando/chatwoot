@@ -2,6 +2,7 @@ class Webhooks::EvolutionController < ActionController::API
   before_action :parse_evolution_payload
 
   def process_payload
+    Rails.logger.info("Evolution webhook received: instance=#{@instance} event=#{@payload['event']}")
     channel = find_channel
     if channel.blank?
       Rails.logger.warn("Rejected Evolution webhook: no channel for instance #{@instance}")
@@ -33,10 +34,10 @@ class Webhooks::EvolutionController < ActionController::API
   def find_channel
     return nil if @instance.blank?
 
-    Channel::Whatsapp.find_by(
-      provider: 'evolution_api',
-      "provider_config->>'evolution_instance'": @instance.to_s
-    )
+    Channel::Whatsapp
+      .where(provider: 'evolution_api')
+      .where("provider_config->>'evolution_instance' = ?", @instance.to_s)
+      .take
   end
 
   def channel_inactive?(channel)
