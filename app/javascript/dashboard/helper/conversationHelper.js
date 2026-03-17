@@ -89,6 +89,10 @@ export const getReadMessages = (messages, agentLastSeenAt) => {
  */
 export const getUnreadMessages = (messages, agentLastSeenAt) => {
   return messages.filter(
-    message => message.created_at * 1000 > agentLastSeenAt * 1000
+    message =>
+      // Unread badge should be based on incoming messages only. Outgoing/pending
+      // messages can have client-generated IDs and newer timestamps.
+      message.message_type === 0 &&
+      message.created_at * 1000 > agentLastSeenAt * 1000
   );
 };

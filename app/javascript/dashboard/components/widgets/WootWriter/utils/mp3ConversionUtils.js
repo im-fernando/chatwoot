@@ -80,7 +80,33 @@ export const encodeToMP3 = (channels, sampleRate, samples, bitrate = 128) => {
   for (let offset = 0; offset < samples.length; offset += maxSamplesPerFrame) {
     const sliceEnd = Math.min(offset + maxSamplesPerFrame, samples.length);
     const sampleSlice = samples.subarray(offset, sliceEnd);
-    const mp3Buffer = encoder.encodeBuffer(sampleSlice);
+    let mp3Buffer = [];
+    if (channels === 1) {
+      mp3Buffer = encoder.encodeBuffer(sampleSlice);
+    } else if (channels === 2) {
+      // lamejs expects separate left/right buffers for stereo.
+      // Our `samples` are interleaved: L,R,L,R,...
+      const frameLength = Math.floor(sampleSlice.length / 2);
+      const left = new Int16Array(frameLength);
+      const right = new Int16Array(frameLength);
+      for (let i = 0; i < frameLength; i += 1) {
+        left[i] = sampleSlice[i * 2];
+        right[i] = sampleSlice[i * 2 + 1];
+      }
+      mp3Buffer = encoder.encodeBuffer(left, right);
+    } else {
+      // Fallback: mix down multi-channel audio to mono.
+      const frameLength = Math.floor(sampleSlice.length / channels);
+      const mono = new Int16Array(frameLength);
+      for (let i = 0; i < frameLength; i += 1) {
+        let sum = 0;
+        for (let c = 0; c < channels; c += 1) {
+          sum += sampleSlice[i * channels + c] || 0;
+        }
+        mono[i] = Math.round(sum / channels);
+      }
+      mp3Buffer = encoder.encodeBuffer(mono);
+    }
 
     if (mp3Buffer.length > 0) {
       outputBuffer.push(new Int8Array(mp3Buffer));
@@ -129,7 +155,7 @@ export const convertToMp3 = async (audioBlob, bitrate = 128) => {
       bitrate
     );
   } catch (error) {
-    throw new Error('Conversion to MP3 failed.');
+    throw new Error(`Conversion to MP3 failed: ${error?.message || error}`);
   }
 };
 

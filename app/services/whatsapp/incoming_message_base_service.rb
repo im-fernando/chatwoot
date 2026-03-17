@@ -150,15 +150,36 @@ class Whatsapp::IncomingMessageBaseService
     attachment_file = download_attachment_file(attachment_payload)
     return if attachment_file.blank?
 
+    filename = attachment_filename(attachment_file)
+    content_type = attachment_content_type(attachment_file)
+
     @message.attachments.new(
       account_id: @message.account_id,
       file_type: file_content_type(message_type),
       file: {
         io: attachment_file,
-        filename: attachment_file.original_filename,
-        content_type: attachment_file.content_type
+        filename: filename,
+        content_type: content_type
       }
     )
+  end
+
+  def attachment_filename(file)
+    file.respond_to?(:original_filename) && file.original_filename.presence || File.basename(file.path)
+  end
+
+  def attachment_content_type(file)
+    file.respond_to?(:content_type) && file.content_type.presence || attachment_mime_type(message_type)
+  end
+
+  def attachment_mime_type(msg_type)
+    {
+      'image' => 'image/jpeg',
+      'sticker' => 'image/webp',
+      'video' => 'video/mp4',
+      'audio' => 'audio/ogg',
+      'document' => 'application/octet-stream'
+    }[msg_type.to_s] || 'application/octet-stream'
   end
 
   def attach_location

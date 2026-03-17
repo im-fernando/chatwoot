@@ -22,7 +22,7 @@ const props = defineProps({
     required: true,
   },
   firstUnreadId: {
-    type: Number,
+    type: [Number, String],
     default: null,
   },
   isAnEmailChannel: {
@@ -167,7 +167,7 @@ const getInReplyToMessage = parentMessage => {
     <slot name="beforeAll" />
     <template v-for="(message, index) in allMessages" :key="message.id">
       <slot
-        v-if="firstUnreadId && message.id === firstUnreadId"
+        v-if="firstUnreadId && String(message.id) === String(firstUnreadId)"
         name="unreadBadge"
       />
       <Message

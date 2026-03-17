@@ -115,6 +115,8 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     media_data = attachment_media_for_evolution(attachment, mimetype)
     return handle_error_with_message(message, 'Could not read attachment file') if media_data.blank?
 
+    return send_audio_message(phone_number, message, media_data) if type == 'audio'
+
     body = {
       number: normalize_number(phone_number),
       mediatype: type,
@@ -126,6 +128,19 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
 
     response = HTTParty.post(
       "#{api_base_path}/message/sendMedia/#{instance_name}",
+      headers: api_headers,
+      body: body.to_json
+    )
+    process_response(response, message)
+  end
+
+  def send_audio_message(phone_number, message, audio_data)
+    quoted = whatsapp_reply_context(message)
+    body = { number: normalize_number(phone_number), audio: audio_data }
+    body[:quoted] = { key: { id: quoted[:message_id] }, message: { conversation: quoted[:text] } } if quoted.present?
+
+    response = HTTParty.post(
+      "#{api_base_path}/message/sendWhatsAppAudio/#{instance_name}",
       headers: api_headers,
       body: body.to_json
     )

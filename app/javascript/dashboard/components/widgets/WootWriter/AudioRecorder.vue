@@ -63,11 +63,33 @@ const initWaveSurfer = () => {
 
   record.value.on('record-end', async blob => {
     const audioUrl = URL.createObjectURL(blob);
-    const audioBlob = await convertAudio(blob, props.audioRecordFormat);
-    const fileName = `${getUuid()}.mp3`;
-    const file = new File([audioBlob], fileName, {
-      type: props.audioRecordFormat,
-    });
+    let audioBlob = blob;
+    let outputType = blob.type || props.audioRecordFormat;
+
+    try {
+      audioBlob = await convertAudio(blob, props.audioRecordFormat);
+      outputType = props.audioRecordFormat;
+    } catch (error) {
+      // If conversion fails in the browser, fall back to the original recording blob.
+      audioBlob = blob;
+      outputType = blob.type || props.audioRecordFormat;
+    }
+
+    const ext =
+      outputType === 'audio/wav'
+        ? 'wav'
+        : outputType === 'audio/mp3'
+          ? 'mp3'
+          : outputType === 'audio/mpeg'
+            ? 'mp3'
+            : outputType.includes('webm')
+              ? 'webm'
+              : outputType.includes('ogg')
+                ? 'ogg'
+                : 'audio';
+
+    const fileName = `${getUuid()}.${ext}`;
+    const file = new File([audioBlob], fileName, { type: outputType });
     wavesurfer.value.load(audioUrl);
     emit('finishRecord', {
       name: file.name,

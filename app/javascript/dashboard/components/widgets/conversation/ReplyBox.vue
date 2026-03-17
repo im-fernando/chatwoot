@@ -361,11 +361,10 @@ export default {
       return `draft-${this.conversationIdByRoute}-${this.replyType}`;
     },
     audioRecordFormat() {
-      if (this.isAWhatsAppChannel || this.isATelegramChannel) {
-        return AUDIO_FORMATS.MP3;
-      }
-      if (this.isAPIInbox) {
-        return AUDIO_FORMATS.MP3;
+      // MP3 conversion can fail depending on the browser/codec support.
+      // WAV is a safer default for recording uploads.
+      if (this.isAWhatsAppChannel || this.isATelegramChannel || this.isAPIInbox) {
+        return AUDIO_FORMATS.WAV;
       }
       return AUDIO_FORMATS.WAV;
     },
