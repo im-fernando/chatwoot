@@ -81,7 +81,8 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
 
   def send_text_message(phone_number, message)
     quoted = whatsapp_reply_context(message)
-    body = { number: normalize_number(phone_number), text: message.outgoing_content }
+    text = message.outgoing_content.to_s.gsub(/\n+\z/, '')
+    body = { number: normalize_number(phone_number), text: text }
     body[:quoted] = { key: { id: quoted[:message_id] }, message: { conversation: quoted[:text] } } if quoted.present?
 
     response = HTTParty.post(
@@ -107,7 +108,7 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     type_str = attachment.file_type.to_s
     type = %w[image audio video].include?(type_str) ? type_str : 'document'
     mimetype = evolution_mimetype(attachment, type)
-    caption = %w[audio sticker].include?(type) ? '' : (message.outgoing_content.presence || '')
+    caption = %w[audio sticker].include?(type) ? '' : (message.outgoing_content.to_s.gsub(/\n+\z/, '').presence || '')
     filename = attachment.file.respond_to?(:filename) ? attachment.file.filename.presence : nil
     filename ||= "file.#{type}"
 
@@ -130,7 +131,8 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
 
   def send_interactive_as_text(phone_number, message)
     # Evolution API has different interactive API; send as text for MVP
-    text = message.outgoing_content.presence || message.content_attributes['items']&.map { |i| i['title'] }&.join(', ')
+    raw = message.outgoing_content.presence || message.content_attributes['items']&.map { |i| i['title'] }&.join(', ')
+    text = raw.to_s.gsub(/\n+\z/, '')
     response = HTTParty.post(
       "#{api_base_path}/message/sendText/#{instance_name}",
       headers: api_headers,
