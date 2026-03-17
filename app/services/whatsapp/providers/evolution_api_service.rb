@@ -112,12 +112,15 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     filename = attachment.file.respond_to?(:filename) ? attachment.file.filename.presence : nil
     filename ||= "file.#{type}"
 
+    media_data = attachment_media_for_evolution(attachment, mimetype)
+    return handle_error_with_message(message, 'Could not read attachment file') if media_data.blank?
+
     body = {
       number: normalize_number(phone_number),
       mediatype: type,
       mimetype: mimetype,
       caption: caption,
-      media: attachment.download_url,
+      media: media_data,
       fileName: filename.to_s
     }
 
@@ -127,6 +130,18 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
       body: body.to_json
     )
     process_response(response, message)
+  end
+
+  def attachment_media_for_evolution(attachment, mimetype)
+    return nil unless attachment.file.attached?
+
+    content = attachment.file.download
+    Base64.strict_encode64(content)
+  end
+
+  def handle_error_with_message(message, msg)
+    message.update!(status: :failed, external_error: msg)
+    nil
   end
 
   def send_interactive_as_text(phone_number, message)
