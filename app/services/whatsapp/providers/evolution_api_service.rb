@@ -81,7 +81,7 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
 
   def send_text_message(phone_number, message)
     quoted = whatsapp_reply_context(message)
-    text = message.outgoing_content.to_s.gsub(/\n+\z/, '')
+    text = Whatsapp::OutgoingSignature.body_for_whatsapp(message).to_s.gsub(/\n+\z/, '')
     body = { number: normalize_number(phone_number), text: text }
     body[:quoted] = { key: { id: quoted[:message_id] }, message: { conversation: quoted[:text] } } if quoted.present?
 
@@ -108,12 +108,22 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     type_str = attachment.file_type.to_s
     type = %w[image audio video].include?(type_str) ? type_str : 'document'
     mimetype = evolution_mimetype(attachment, type)
-    caption = %w[audio sticker].include?(type) ? '' : (message.outgoing_content.to_s.gsub(/\n+\z/, '').presence || '')
+    caption =
+      if type == 'audio' || attachment.file_type.to_s == 'sticker'
+        ''
+      else
+        Whatsapp::OutgoingSignature.body_for_whatsapp(message).to_s.gsub(/\n+\z/, '').presence || ''
+      end
     filename = attachment.file.respond_to?(:filename) ? attachment.file.filename.presence : nil
     filename ||= "file.#{type}"
 
     media_data = attachment_media_for_evolution(attachment, mimetype)
     return handle_error_with_message(message, 'Could not read attachment file') if media_data.blank?
+
+    if type == 'audio' || attachment.file_type.to_s == 'sticker'
+      pre = post_evolution_signed_text_preamble(phone_number, message)
+      return nil if pre == :failed
+    end
 
     return send_evolution_audio(phone_number, message, media_data, mimetype, filename) if type == 'audio'
 
@@ -201,14 +211,36 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
 
   def send_interactive_as_text(phone_number, message)
     # Evolution API has different interactive API; send as text for MVP
-    raw = message.outgoing_content.presence || message.content_attributes['items']&.map { |i| i['title'] }&.join(', ')
-    text = raw.to_s.gsub(/\n+\z/, '')
+    text = Whatsapp::OutgoingSignature.body_for_whatsapp_interactive(message).to_s.gsub(/\n+\z/, '')
     response = HTTParty.post(
       "#{api_base_path}/message/sendText/#{instance_name}",
       headers: api_headers,
       body: { number: normalize_number(phone_number), text: text.to_s }.to_json
     )
     process_response(response, message)
+  end
+
+  # Sends "> Name" / "> Name\n…" before audio or sticker; does not set message.source_id on success.
+  def post_evolution_signed_text_preamble(phone_number, message)
+    text = Whatsapp::OutgoingSignature.body_for_whatsapp(message).to_s.gsub(/\n+\z/, '')
+    return :skipped if text.blank?
+
+    quoted = whatsapp_reply_context(message)
+    body = { number: normalize_number(phone_number), text: text }
+    body[:quoted] = { key: { id: quoted[:message_id] }, message: { conversation: quoted[:text] } } if quoted.present?
+
+    response = HTTParty.post(
+      "#{api_base_path}/message/sendText/#{instance_name}",
+      headers: api_headers,
+      body: body.to_json
+    )
+    parsed = response.parsed_response
+    if response.success? && parsed.is_a?(Hash) && parsed['key'].present?
+      :sent
+    else
+      handle_error(response, message)
+      :failed
+    end
   end
 
   def template_body_text(template_info)
