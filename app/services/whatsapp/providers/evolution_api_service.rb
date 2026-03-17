@@ -115,7 +115,7 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     media_data = attachment_media_for_evolution(attachment, mimetype)
     return handle_error_with_message(message, 'Could not read attachment file') if media_data.blank?
 
-    return send_audio_message(phone_number, message, media_data) if type == 'audio'
+    return send_evolution_audio(phone_number, message, media_data, mimetype, filename) if type == 'audio'
 
     body = {
       number: normalize_number(phone_number),
@@ -134,17 +134,57 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     process_response(response, message)
   end
 
-  def send_audio_message(phone_number, message, audio_data)
+  # WhatsApp PTT / sendWhatsAppAudio works reliably with ogg/opus, mp3, m4a.
+  # Web dashboard often records WAV or WebM — Evolution rejects those on this endpoint.
+  def send_evolution_audio(phone_number, message, audio_data, mimetype, filename)
+    number = normalize_number(phone_number)
     quoted = whatsapp_reply_context(message)
-    body = { number: normalize_number(phone_number), audio: audio_data }
-    body[:quoted] = { key: { id: quoted[:message_id] }, message: { conversation: quoted[:text] } } if quoted.present?
+    quoted_payload =
+      quoted.present? ? { key: { id: quoted[:message_id] }, message: { conversation: quoted[:text] } } : nil
+
+    if evolution_audio_ptt_friendly?(mimetype, filename)
+      body = { number: number, audio: audio_data }
+      body[:quoted] = quoted_payload if quoted_payload.present?
+      response = HTTParty.post(
+        "#{api_base_path}/message/sendWhatsAppAudio/#{instance_name}",
+        headers: api_headers,
+        body: body.to_json
+      )
+      parsed = response.parsed_response
+      if response.success? && parsed.is_a?(Hash) && parsed['key'].present?
+        return process_response(response, message)
+      end
+
+      Rails.logger.warn(
+        "[Evolution] sendWhatsAppAudio failed (status=#{response.code}); trying sendMedia. Body: #{response.body.to_s.truncate(400)}"
+      )
+    end
+
+    send_evolution_audio_as_media(phone_number, message, audio_data, mimetype, filename)
+  end
+
+  def send_evolution_audio_as_media(phone_number, message, audio_data, mimetype, filename)
+    body = {
+      number: normalize_number(phone_number),
+      mediatype: 'audio',
+      mimetype: mimetype,
+      caption: '',
+      media: audio_data,
+      fileName: filename.to_s
+    }
 
     response = HTTParty.post(
-      "#{api_base_path}/message/sendWhatsAppAudio/#{instance_name}",
+      "#{api_base_path}/message/sendMedia/#{instance_name}",
       headers: api_headers,
       body: body.to_json
     )
     process_response(response, message)
+  end
+
+  def evolution_audio_ptt_friendly?(mimetype, filename)
+    hint = "#{mimetype} #{filename}".downcase
+    hint.match?(/\.(ogg|opus|mp3|m4a)\b/) ||
+      mimetype.to_s.match?(%r{\Aaudio/(ogg|mpeg|mp3|mp4|x-m4a)\b}i)
   end
 
   def attachment_media_for_evolution(attachment, mimetype)

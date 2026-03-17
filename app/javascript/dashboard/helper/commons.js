@@ -43,11 +43,39 @@ export const getTypingUsersText = (users = []) => {
   return ['TYPING.MULTIPLE', { user: firstUser.name, count: count - 1 }];
 };
 
+const pendingAttachmentFromFile = (file, tempId) => {
+  const mime = file.type || '';
+  let fileType = 'file';
+  if (mime.startsWith('audio/')) fileType = 'audio';
+  else if (mime.startsWith('video/')) fileType = 'video';
+  else if (mime.startsWith('image/')) fileType = 'image';
+
+  const extension =
+    (typeof file.name === 'string' && file.name.includes('.') && file.name.split('.').pop()) ||
+    (mime === 'audio/wav' ? 'wav' : mime.split('/')[1] || '');
+
+  return {
+    id: tempId,
+    file_type: fileType,
+    data_url: URL.createObjectURL(file),
+    extension,
+  };
+};
+
 export const createPendingMessage = data => {
   const timestamp = Math.floor(new Date().getTime() / 1000);
   const tempMessageId = getUuid();
   const { message, file } = data;
-  const tempAttachments = [{ id: tempMessageId }];
+  let tempAttachments = null;
+  if (file instanceof Blob) {
+    try {
+      tempAttachments = [pendingAttachmentFromFile(file, tempMessageId)];
+    } catch {
+      tempAttachments = [{ id: tempMessageId }];
+    }
+  } else if (file) {
+    tempAttachments = [{ id: tempMessageId }];
+  }
   const pendingMessage = {
     ...data,
     content: message || null,
@@ -57,7 +85,7 @@ export const createPendingMessage = data => {
     created_at: timestamp,
     message_type: MESSAGE_TYPE.OUTGOING,
     conversation_id: data.conversationId,
-    attachments: file ? tempAttachments : null,
+    attachments: tempAttachments,
   };
 
   return pendingMessage;
