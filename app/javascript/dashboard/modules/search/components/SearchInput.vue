@@ -2,8 +2,9 @@
 import { ref, useTemplateRef, onMounted, onUnmounted } from 'vue';
 import { debounce } from '@chatwoot/utils';
 import RecentSearches from './RecentSearches.vue';
+import { parseConversationTicketQuery } from '../helpers/searchHelper';
 
-const emit = defineEmits(['search', 'selectRecentSearch']);
+const emit = defineEmits(['search', 'selectRecentSearch', 'openTicket']);
 
 const searchQuery = defineModel({
   type: String,
@@ -50,6 +51,14 @@ const onFocus = () => {
 const onBlur = () => {
   isInputFocused.value = false;
   showRecentSearches.value = false;
+};
+
+const onKeydown = e => {
+  if (e.key !== 'Enter') return;
+  const ticketId = parseConversationTicketQuery(searchQuery.value);
+  if (ticketId === null) return;
+  e.preventDefault();
+  emit('openTicket', ticketId);
 };
 
 const onSelectRecentSearch = query => {
@@ -108,6 +117,7 @@ onUnmounted(() => {
         @focus="onFocus"
         @blur="onBlur"
         @input="onInput"
+        @keydown="onKeydown"
       />
       <span class="text-sm text-n-slate-10 flex-shrink-0">
         {{ $t('SEARCH.PLACEHOLDER_KEYBINDING') }}

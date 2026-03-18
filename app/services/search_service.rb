@@ -30,11 +30,35 @@ class SearchService
     @search_query ||= params[:q].to_s.strip
   end
 
+  def ticket_display_id_query
+    stripped = search_query.sub(/\A#+/, '').strip
+    return unless stripped.match?(/\A\d+\z/)
+
+    stripped.to_i
+  end
+
+  def apply_conversation_search_conditions(conversations_query)
+    contact_clause = 'contacts.name ILIKE :search OR contacts.email ILIKE :search OR ' \
+                     'contacts.phone_number ILIKE :search OR contacts.identifier ILIKE :search'
+    search_pattern = "%#{search_query}%"
+
+    if (tid = ticket_display_id_query)
+      conversations_query.where(
+        "conversations.display_id = :tid OR #{contact_clause}",
+        tid: tid, search: search_pattern
+      )
+    else
+      conversations_query.where(
+        "cast(conversations.display_id as text) ILIKE :search OR #{contact_clause}",
+        search: search_pattern
+      )
+    end
+  end
+
   def filter_conversations
     conversations_query = current_account.conversations.where(inbox_id: accessable_inbox_ids)
                                          .joins('INNER JOIN contacts ON conversations.contact_id = contacts.id')
-                                         .where("cast(conversations.display_id as text) ILIKE :search OR contacts.name ILIKE :search OR contacts.email
-                            ILIKE :search OR contacts.phone_number ILIKE :search OR contacts.identifier ILIKE :search", search: "%#{search_query}%")
+    conversations_query = apply_conversation_search_conditions(conversations_query)
 
     if current_account.feature_enabled?('advanced_search')
       conversations_query = apply_time_filter(conversations_query,

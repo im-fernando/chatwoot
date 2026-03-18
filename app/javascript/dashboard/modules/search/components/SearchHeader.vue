@@ -12,7 +12,7 @@ const props = defineProps({
   initialQuery: { type: String, default: '' },
 });
 
-const emit = defineEmits(['search', 'filterChange']);
+const emit = defineEmits(['search', 'filterChange', 'openTicket']);
 
 const filters = defineModel('filters', { type: Object, default: () => ({}) });
 
@@ -49,6 +49,7 @@ watch(
       v-model="searchQuery"
       @search="onSearch"
       @select-recent-search="onSelectRecentSearch"
+      @open-ticket="$emit('openTicket', $event)"
     >
       <Policy
         :permissions="ROLES"

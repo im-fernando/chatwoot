@@ -116,9 +116,16 @@ const hasSlaPolicyId = computed(() => props.chat?.sla_policy_id);
       <div
         class="flex flex-col items-start min-w-0 ml-2 overflow-hidden rtl:ml-0 rtl:mr-2"
       >
-        <div class="flex flex-row items-center max-w-full gap-1 p-0 m-0">
+        <div class="flex flex-row items-center max-w-full gap-1.5 p-0 m-0 min-w-0">
           <span
-            class="text-sm font-medium truncate leading-tight text-n-slate-12"
+            v-if="chat.id"
+            class="text-xs font-semibold tabular-nums flex-shrink-0 text-n-slate-10"
+            :title="$t('CONVERSATION.HEADER.TICKET_NUMBER')"
+          >
+            #{{ chat.id }}
+          </span>
+          <span
+            class="text-sm font-medium truncate leading-tight text-n-slate-12 min-w-0"
           >
             {{ currentContact.name }}
           </span>

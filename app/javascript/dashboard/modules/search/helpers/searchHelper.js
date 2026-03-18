@@ -1,5 +1,15 @@
 import ContactAPI from 'dashboard/api/contacts';
 
+/** @param {string} [q] */
+export function parseConversationTicketQuery(q) {
+  if (!q || typeof q !== 'string') return null;
+  const trimmed = q.trim();
+  const digits = trimmed.replace(/^#+/, '').trim();
+  if (!/^\d+$/.test(digits)) return null;
+  const n = parseInt(digits, 10);
+  return n > 0 ? n : null;
+}
+
 export const DATE_RANGE_TYPES = {
   LAST_7_DAYS: 'last_7_days',
   LAST_30_DAYS: 'last_30_days',

@@ -107,8 +107,8 @@ const inboxIcon = computed(() => {
               icon="i-lucide-hash"
               class="flex-shrink-0 text-n-slate-11 size-4"
             />
-            <span class="text-n-slate-12 text-sm leading-4">
-              {{ id }}
+            <span class="text-n-slate-12 text-sm leading-4 tabular-nums">
+              #{{ id }}
             </span>
           </div>
           <div v-if="inboxName" class="w-px h-3 bg-n-strong" />

@@ -6,6 +6,7 @@ import { useTrack } from 'dashboard/composables';
 import { useI18n } from 'vue-i18n';
 import { useCamelCase } from 'dashboard/composables/useTransformKeys';
 import { generateURLParams, parseURLParams } from '../helpers/searchHelper';
+import { frontendURL } from 'dashboard/helper/URLHelper.js';
 import {
   ROLES,
   CONVERSATION_PERMISSIONS,
@@ -309,6 +310,17 @@ const onBack = () => {
   clearSearchResult();
 };
 
+const goToConversationTicket = displayId => {
+  const path = frontendURL(
+    `accounts/${route.params.accountId}/conversations/${displayId}`
+  );
+  router.push({ path });
+};
+
+const onOpenTicket = displayId => {
+  goToConversationTicket(displayId);
+};
+
 const loadMore = () => {
   const SEARCH_ACTIONS = {
     contacts: 'conversationSearch/contactSearch',
@@ -345,7 +357,6 @@ onMounted(() => {
   );
   filters.value = parsedFilters;
 
-  // Auto-execute search if query parameter exists
   if (route.query.q) {
     onSearch(route.query.q);
   }
@@ -377,6 +388,7 @@ onUnmounted(() => {
             :initial-query="query"
             @search="onSearch"
             @filter-change="onFilterChange"
+            @open-ticket="onOpenTicket"
           />
           <SearchTabs
             v-if="query"

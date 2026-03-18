@@ -85,6 +85,7 @@
       "YOU_ANSWERED": "You answered"
     },
     "HEADER": {
+      "TICKET_NUMBER": "Conversation ticket number",
       "RESOLVE_ACTION": "Resolve",
       "REOPEN_ACTION": "Reopen",
       "OPEN_ACTION": "Open",
