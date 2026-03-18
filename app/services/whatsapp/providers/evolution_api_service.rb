@@ -121,13 +121,13 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     filename = attachment.file.respond_to?(:filename) ? attachment.file.filename.presence : nil
     filename ||= "file.#{type}"
 
-    media_data = attachment_media_for_evolution(attachment, mimetype)
+    media_data, mimetype, filename = evolution_audio_media_bundle(attachment, mimetype, filename) if type == 'audio'
+    media_data ||= attachment_media_for_evolution(attachment, mimetype)
     return handle_error_with_message(message, 'Could not read attachment file') if media_data.blank?
 
-    if type == 'audio' || attachment.file_type.to_s == 'sticker'
-      pre = post_evolution_signed_text_preamble(phone_number, message)
-      return nil if pre == :failed
-    end
+    # Evolution áudio/figurinhas não suportam caption de forma consistente.
+    # Também evitamos enviar "preambulo" (ex.: "> Nome") antes do áudio:
+    # se o áudio falhar por formato (webm/wav), o cliente via apenas texto solto.
 
     return send_evolution_audio(phone_number, message, media_data, mimetype, filename) if type == 'audio'
 
@@ -263,5 +263,59 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     end
 
     { 'image' => 'image/jpeg', 'audio' => 'audio/ogg', 'video' => 'video/mp4' }[type] || 'application/octet-stream'
+  end
+
+  def evolution_audio_media_bundle(attachment, mimetype, filename)
+    return [nil, mimetype, filename] unless attachment.file.attached?
+
+    raw_mime = mimetype.to_s
+    raw_name = filename.to_s
+    return [nil, mimetype, filename] if evolution_audio_ptt_friendly?(raw_mime, raw_name)
+
+    # Evolution costuma rejeitar áudio gravado no dashboard em WAV/WebM.
+    # Se houver ffmpeg disponível, transcodamos pra ogg/opus.
+    converted = transcode_audio_to_ogg_opus(attachment)
+    return [nil, mimetype, filename] if converted.blank?
+
+    [converted, 'audio/ogg', 'voice.ogg']
+  end
+
+  def transcode_audio_to_ogg_opus(attachment)
+    content = attachment.file.download
+    return nil if content.blank?
+
+    require 'tempfile'
+    require 'open3'
+
+    input = Tempfile.new(['chatwoot_audio_in', '.bin'])
+    output = Tempfile.new(['chatwoot_audio_out', '.ogg'])
+    input.binmode
+    output.binmode
+    input.write(content)
+    input.rewind
+
+    cmd = [
+      'ffmpeg', '-hide_banner', '-loglevel', 'error',
+      '-y', '-i', input.path,
+      '-vn',
+      '-c:a', 'libopus',
+      '-b:a', '24k',
+      '-ar', '48000',
+      output.path
+    ]
+
+    _stdout, stderr, status = Open3.capture3(*cmd)
+    unless status.success? && File.size?(output.path)
+      Rails.logger.warn("[Evolution] audio transcode failed: #{stderr.to_s.truncate(300)}")
+      return nil
+    end
+
+    Base64.strict_encode64(File.binread(output.path))
+  rescue Errno::ENOENT
+    # ffmpeg não instalado no ambiente
+    nil
+  ensure
+    input&.close!
+    output&.close!
   end
 end

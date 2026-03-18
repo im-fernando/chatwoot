@@ -9,7 +9,7 @@ services:
         BUNDLE_WITHOUT: development:test
         RAILS_SERVE_STATIC_FILES: 'true'
         EXECJS_RUNTIME: Disabled
-    env_file: .env
+    env_file: ../.env
     volumes:
       - storage_data:/app/storage
     depends_on:
@@ -29,7 +29,7 @@ services:
 
   sidekiq:
     image: chatwoot:custom-production
-    env_file: .env
+    env_file: ../.env
     volumes:
       - storage_data:/app/storage
     depends_on:
@@ -58,7 +58,7 @@ services:
     image: redis:alpine
     restart: always
     command: ["sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\""]
-    env_file: .env
+    env_file: ../.env
     volumes:
       - redis_data:/data
 
