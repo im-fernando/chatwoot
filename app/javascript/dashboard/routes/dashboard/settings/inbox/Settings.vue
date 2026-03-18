@@ -84,6 +84,7 @@ export default {
       senderNameType: 'friendly',
       businessName: '',
       locktoSingleConversation: false,
+      whatsappMenuTriageEnabled: false,
       allowMessagesAfterResolved: true,
       continuityViaEmail: true,
       selectedInboxName: '',
@@ -389,6 +390,9 @@ export default {
       this.selectedFeatureFlags = this.inbox.selected_feature_flags || [];
       this.replyTime = this.inbox.reply_time;
       this.locktoSingleConversation = this.inbox.lock_to_single_conversation;
+      this.whatsappMenuTriageEnabled =
+        this.isAWhatsAppChannel &&
+        Boolean(this.inbox.whatsapp_menu_triage_enabled);
       this.selectedPortalSlug = this.inbox.help_center
         ? this.inbox.help_center.slug
         : '';
@@ -505,6 +509,7 @@ export default {
           lock_to_single_conversation: this.locktoSingleConversation,
           sender_name_type: this.senderNameType,
           business_name: this.businessName || null,
+          whatsapp_menu_triage_enabled: this.whatsappMenuTriageEnabled,
           channel: {
             widget_color: this.inbox.widget_color,
             website_url: this.channelWebsiteUrl,
@@ -741,6 +746,17 @@ export default {
                 class="!mb-0"
               />
             </SettingsFieldSection>
+
+            <SettingsToggleSection
+              v-if="isAWhatsAppChannel"
+              v-model="whatsappMenuTriageEnabled"
+              :header="
+                $t('INBOX_MGMT.ADD.WHATSAPP.MENU_TRIAGE_TOGGLE.LABEL')
+              "
+              :description="
+                $t('INBOX_MGMT.ADD.WHATSAPP.MENU_TRIAGE_TOGGLE.HELP_TEXT')
+              "
+            />
 
             <SettingsFieldSection
               v-if="!isAVoiceChannel"

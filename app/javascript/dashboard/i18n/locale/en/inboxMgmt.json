@@ -285,6 +285,10 @@
           "WEBHOOK_VERIFICATION_TOKEN": "Webhook Verification Token"
         },
         "SUBMIT_BUTTON": "Create WhatsApp Channel",
+        "MENU_TRIAGE_TOGGLE": {
+          "LABEL": "WhatsApp menu triage (1 / 2 / 3)",
+          "HELP_TEXT": "New conversations stay pending until the contact chooses a department (PDV, Managerial, Finance). Finance unavailable 5pm–6:59am America/Sao_Paulo. Set team IDs in menu_triage_service.rb."
+        },
         "EMBEDDED_SIGNUP": {
           "TITLE": "Quick setup with Meta",
           "DESC": "Use the WhatsApp Embedded Signup flow to quickly connect new numbers. You will be redirected to Meta to log into your WhatsApp Business account. Having admin access will help make the setup smooth and easy.",

@@ -128,6 +128,7 @@ if resource.whatsapp?
   json.message_templates resource.channel.try(:message_templates)
   json.provider_config resource.channel.try(:provider_config) if Current.account_user&.administrator?
   json.reauthorization_required resource.channel.try(:reauthorization_required?)
+  json.whatsapp_menu_triage_enabled resource.whatsapp_menu_triage_enabled
 end
 
 ## Voice Channel Attributes
