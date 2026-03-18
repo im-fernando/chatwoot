@@ -50,7 +50,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      - POSTGRES_DB=chatwoot
+      - POSTGRES_DB=chatwoot_production
       - POSTGRES_USER=postgres
     env_file: ../.env
 
