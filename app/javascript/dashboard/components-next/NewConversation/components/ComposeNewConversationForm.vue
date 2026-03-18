@@ -90,6 +90,10 @@ const inboxTypes = computed(() => ({
     props.targetInbox?.medium === 'whatsapp',
 }));
 
+const isEvolutionWhatsAppInbox = computed(() => {
+  return inboxTypes.value.isWhatsapp && props.targetInbox?.provider === 'evolution_api';
+});
+
 const whatsappMessageTemplates = computed(() =>
   Object.keys(props.targetInbox?.messageTemplates || {}).length
     ? props.targetInbox.messageTemplates
@@ -107,7 +111,7 @@ const effectiveChannelType = computed(() =>
 const validationRules = computed(() => ({
   selectedContact: { required },
   targetInbox: { required },
-  message: { required: requiredIf(!inboxTypes.value.isWhatsapp) },
+  message: { required: requiredIf(!inboxTypes.value.isWhatsapp || isEvolutionWhatsAppInbox.value) },
   subject: { required: requiredIf(inboxTypes.value.isEmail) },
 }));
 
@@ -318,6 +322,20 @@ const handleSendWhatsappMessage = async ({ message, templateParams }) => {
   });
 };
 
+const handleOpenWhatsappConversation = async () => {
+  if (!props.targetInbox?.id || !props.selectedContact?.id) return;
+  const payload = {
+    inboxId: props.targetInbox.id,
+    sourceId: props.targetInbox.sourceId,
+    contactId: props.selectedContact.id,
+    assigneeId: props.currentUser?.id,
+  };
+  await emit('createConversation', {
+    payload,
+    isFromWhatsApp: true,
+  });
+};
+
 const handleSendTwilioMessage = async ({ message, templateParams }) => {
   const twilioMessagePayload = prepareWhatsAppMessagePayload({
     targetInbox: props.targetInbox,
@@ -334,7 +352,7 @@ const handleSendTwilioMessage = async ({ message, templateParams }) => {
 
 const shouldShowMessageEditor = computed(() => {
   return (
-    !inboxTypes.value.isWhatsapp &&
+    (!inboxTypes.value.isWhatsapp || isEvolutionWhatsAppInbox.value) &&
     !showNoInboxAlert.value &&
     !inboxTypes.value.isTwilioWhatsapp
   );
@@ -437,6 +455,7 @@ useKeyboardEvents({
       v-else
       :attached-files="state.attachedFiles"
       :is-whatsapp-inbox="inboxTypes.isWhatsapp"
+      :is-evolution-whatsapp-inbox="isEvolutionWhatsAppInbox"
       :is-email-or-web-widget-inbox="inboxTypes.isEmailOrWebWidget"
       :is-twilio-sms-inbox="inboxTypes.isTwilioSMS"
       :is-twilio-whats-app-inbox="inboxTypes.isTwilioWhatsapp"
@@ -456,6 +475,7 @@ useKeyboardEvents({
       @discard="$emit('discard')"
       @send-message="handleSendMessage"
       @send-whatsapp-message="handleSendWhatsappMessage"
+      @open-whatsapp-conversation="handleOpenWhatsappConversation"
       @send-twilio-message="handleSendTwilioMessage"
     />
   </div>

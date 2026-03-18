@@ -17,6 +17,7 @@ import ContentTemplateSelector from './ContentTemplateSelector.vue';
 const props = defineProps({
   attachedFiles: { type: Array, default: () => [] },
   isWhatsappInbox: { type: Boolean, default: false },
+  isEvolutionWhatsappInbox: { type: Boolean, default: false },
   isEmailOrWebWidgetInbox: { type: Boolean, default: false },
   isTwilioSmsInbox: { type: Boolean, default: false },
   isTwilioWhatsAppInbox: { type: Boolean, default: false },
@@ -35,6 +36,7 @@ const emit = defineEmits([
   'discard',
   'sendMessage',
   'sendWhatsappMessage',
+  'openWhatsappConversation',
   'sendTwilioMessage',
   'insertEmoji',
   'addSignature',
@@ -78,7 +80,10 @@ const shouldShowEmojiButton = computed(() => {
 });
 
 const isRegularMessageMode = computed(() => {
-  return !props.isWhatsappInbox && !props.isTwilioWhatsAppInbox;
+  return (
+    (!props.isWhatsappInbox || props.isEvolutionWhatsappInbox) &&
+    !props.isTwilioWhatsAppInbox
+  );
 });
 
 const isVoiceInbox = computed(() => props.channelType === INBOX_TYPES.VOICE);
@@ -196,10 +201,20 @@ useEventListener(document, 'paste', onPaste);
   >
     <div class="flex gap-2 items-center">
       <WhatsAppOptions
-        v-if="isWhatsappInbox"
+        v-if="isWhatsappInbox && !isEvolutionWhatsappInbox"
         :inbox-id="inboxId"
         :message-templates="messageTemplates"
         @send-message="emit('sendWhatsappMessage', $event)"
+      />
+      <Button
+        v-if="isWhatsappInbox"
+        :label="t('COMPOSE_NEW_CONVERSATION.FORM.ACTION_BUTTONS.OPEN_CONVERSATION')"
+        variant="faded"
+        color="slate"
+        size="sm"
+        class="!text-xs font-medium"
+        :disabled="isLoading || !hasSelectedInbox || hasNoInbox"
+        @click="emit('openWhatsappConversation')"
       />
       <ContentTemplateSelector
         v-if="showTwilioContentTemplates"
