@@ -198,7 +198,7 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
   def evolution_audio_ptt_friendly?(mimetype, filename)
     hint = "#{mimetype} #{filename}".downcase
     hint.match?(/\.(ogg|opus|mp3|m4a)\b/) ||
-      mimetype.to_s.match?(%r{\Aaudio/(ogg|mpeg|mp3|mp4|x-m4a)\b}i)
+      mimetype.to_s.match?(%r{\Aaudio/(ogg|mpeg|mp3|mp4|x-m4a|aac|x-aac)\b}i)
   end
 
   def attachment_media_for_evolution(attachment, mimetype)
@@ -259,7 +259,9 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     return 'application/octet-stream' if attachment.file_type == :file || type == 'document'
 
     if attachment.file.respond_to?(:content_type) && attachment.file.content_type.present?
-      return attachment.file.content_type
+      ct = attachment.file.content_type.to_s
+      # O dashboard muitas vezes grava em AAC; o Evolution lida melhor quando tratamos como mp4/m4a.
+      return (ct == 'audio/x-aac' || ct == 'audio/aac') ? 'audio/mp4' : ct
     end
 
     { 'image' => 'image/jpeg', 'audio' => 'audio/ogg', 'video' => 'video/mp4' }[type] || 'application/octet-stream'
