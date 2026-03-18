@@ -61,6 +61,8 @@ en:
       failed: Signup failed
     assignment_policy:
       not_found: Assignment policy not found
+    support_ticket:
+      conversation_already_linked: This conversation is already linked to a ticket
     attachments:
       invalid: Invalid attachment
     saml:

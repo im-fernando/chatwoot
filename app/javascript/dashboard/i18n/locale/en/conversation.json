@@ -84,6 +84,19 @@
       "THEY_ANSWERED": "They answered",
       "YOU_ANSWERED": "You answered"
     },
+    "TICKETS": {
+      "CREATE_FROM_CONVERSATION": "Create ticket from conversation",
+      "LINK_TO_TICKET": "Link to existing ticket",
+      "CREATE_TITLE": "Create ticket",
+      "LINK_TITLE": "Link to ticket",
+      "TICKET_TITLE": "Ticket title",
+      "TICKET_DESCRIPTION": "Description",
+      "TICKET_NUMBER_PLACEHOLDER": "Ticket #",
+      "CREATE_SUCCESS": "Ticket created",
+      "LINK_SUCCESS": "Conversation linked to ticket",
+      "SUBMIT_CREATE": "Create",
+      "SUBMIT_LINK": "Link"
+    },
     "HEADER": {
       "TICKET_NUMBER": "Conversation ticket number",
       "RESOLVE_ACTION": "Resolve",

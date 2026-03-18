@@ -118,6 +118,13 @@ Rails.application.routes.draw do
             end
           end
           resources :campaigns, only: [:index, :create, :show, :update, :destroy]
+          resources :tickets, only: [:index, :create, :show, :update, :destroy], param: :display_id do
+            scope module: :tickets do
+              resources :conversations, only: [:index, :create, :destroy], controller: 'ticket_conversations',
+                                       param: :conversation_display_id
+              resources :comments, only: [:index, :create]
+            end
+          end
           resources :dashboard_apps, only: [:index, :show, :create, :update, :destroy]
           namespace :channels do
             resource :twilio_channel, only: [:create]

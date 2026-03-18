@@ -1,0 +1,31 @@
+{
+  "TICKETS": {
+    "PAGE_TITLE": "Tickets",
+    "NEW": "New ticket",
+    "CREATE": "Create ticket",
+    "TITLE": "Title",
+    "DESCRIPTION": "Description",
+    "STATUS": "Status",
+    "STATUS_OPEN": "Open",
+    "STATUS_PENDING": "Pending",
+    "STATUS_RESOLVED": "Resolved",
+    "ALL": "All",
+    "EMPTY": "No tickets yet",
+    "EMPTY_HINT": "Create a ticket to group conversations and track updates.",
+    "LINKED_CONVERSATIONS": "Linked conversations",
+    "ADD_CONVERSATION": "Link conversation",
+    "CONVERSATION_DISPLAY_ID": "Conversation #",
+    "UPDATES": "Updates",
+    "NEW_UPDATE": "Add update",
+    "POST_UPDATE": "Post",
+    "BACK_TO_LIST": "Back to tickets",
+    "SAVED": "Ticket saved",
+    "LINKED": "Conversation linked",
+    "UNLINKED": "Conversation unlinked",
+    "UPDATE_POSTED": "Update posted",
+    "OPEN_CONVERSATION": "Open conversation",
+    "UNLINK": "Unlink",
+    "FILTER_STATUS": "Filter by status",
+    "ERROR_GENERIC": "Something went wrong"
+  }
+}

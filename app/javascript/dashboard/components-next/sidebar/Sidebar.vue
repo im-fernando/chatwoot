@@ -234,6 +234,13 @@ const menuItems = computed(() => {
       },
     },
     {
+      name: 'Tickets',
+      label: t('SIDEBAR.TICKETS'),
+      icon: 'i-lucide-ticket',
+      to: accountScopedRoute('tickets_dashboard_index'),
+      activeOn: ['tickets_dashboard_index', 'tickets_dashboard_new', 'tickets_dashboard_show'],
+    },
+    {
       name: 'Conversation',
       label: t('SIDEBAR.CONVERSATIONS'),
       icon: 'i-lucide-message-circle',

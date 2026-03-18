@@ -101,10 +101,10 @@ RSpec.describe Account do
   end
 
   context 'when after_destroy is called' do
-    it 'conv_dpid_seq and camp_dpid_seq_ are deleted' do
+    it 'conv_dpid_seq, camp_dpid_seq_, and support_ticket_dpid_seq are deleted' do
       account = create(:account)
-      query = "select * from information_schema.sequences where sequence_name in  ('camp_dpid_seq_#{account.id}', 'conv_dpid_seq_#{account.id}');"
-      expect(ActiveRecord::Base.connection.execute(query).count).to eq(2)
+      query = "select * from information_schema.sequences where sequence_name in  ('camp_dpid_seq_#{account.id}', 'conv_dpid_seq_#{account.id}', 'support_ticket_dpid_seq_#{account.id}');"
+      expect(ActiveRecord::Base.connection.execute(query).count).to eq(3)
       expect(account.locale).to eq('en')
       account.destroy
       expect(ActiveRecord::Base.connection.execute(query).count).to eq(0)
