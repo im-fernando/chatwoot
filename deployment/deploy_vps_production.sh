@@ -29,6 +29,11 @@ apt-get install -y --no-install-recommends \
   certbot python3-certbot-nginx \
   docker.io
 
+# BuildKit/Buildx (necessário para builds do Compose v2 em algumas distros)
+if apt-cache show docker-buildx >/dev/null 2>&1; then
+  apt-get install -y --no-install-recommends docker-buildx
+fi
+
 # Ubuntu 24.04 (noble) fornece Compose v2 como docker-compose-v2.
 # Alguns mirrors também expõem um pacote virtual "docker-compose".
 if apt-cache show docker-compose-v2 >/dev/null 2>&1; then
@@ -69,7 +74,7 @@ if [[ ! -f "${COMPOSE_FILE_REL}" ]]; then
   die "não encontrei ${COMPOSE_FILE_REL} no repo. Confirme que você puxou os commits com os arquivos de deploy."
 fi
 
-echo "[4/8] Criando `.env` de produção (se não existir)..."
+echo "[4/8] Criando .env de produção (se não existir)..."
 GENERATED_ENV="false"
 if [[ ! -f ".env" ]]; then
   SECRET_KEY_BASE="$(openssl rand -hex 64)"

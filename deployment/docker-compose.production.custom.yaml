@@ -1,10 +1,8 @@
-version: '3'
-
 services:
   rails:
     image: chatwoot:custom-production
     build:
-      context: .
+      context: ..
       dockerfile: ./docker/Dockerfile
       args:
         RAILS_ENV: production
