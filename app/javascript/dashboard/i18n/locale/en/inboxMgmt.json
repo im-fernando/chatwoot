@@ -287,7 +287,7 @@
         "SUBMIT_BUTTON": "Create WhatsApp Channel",
         "MENU_TRIAGE_TOGGLE": {
           "LABEL": "WhatsApp menu triage (1 / 2 / 3)",
-          "HELP_TEXT": "New conversations stay pending until the contact chooses a department (PDV, Managerial, Finance). Finance unavailable 5pm–6:59am America/Sao_Paulo. Set team IDs in menu_triage_service.rb."
+          "HELP_TEXT": "Menu 1–4. Fiscal & Financeiro offline 5pm–6:59am America/Sao_Paulo. Set TEAM_* in menu_triage_service.rb."
         },
         "EMBEDDED_SIGNUP": {
           "TITLE": "Quick setup with Meta",

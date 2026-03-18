@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
-# Fluxo fixo de triagem WhatsApp: menu 1/2/3, financeiro fora 17h–6h59 (America/Sao_Paulo).
-# Ative por inbox: Configurações > Caixas de entrada > [WhatsApp] > menu de triagem.
-# Ajuste os IDs dos times abaixo conforme sua instalação (Configurações > Times).
+# Fluxo de triagem WhatsApp: *Fiscal* e *Financeiro* indisponíveis 17h–6h59 (America/Sao_Paulo).
 module Whatsapp
   class MenuTriageService
     TEAM_PDV_ID = 1
     TEAM_GERENCIAL_ID = 2
-    TEAM_FINANCEIRO_ID = 3
+    TEAM_FISCAL_ID = 3
+    TEAM_FINANCEIRO_ID = 4
 
     TIMEZONE = 'America/Sao_Paulo'
 
@@ -42,7 +41,7 @@ module Whatsapp
       end
     end
 
-    def self.financeiro_offline_now?
+    def self.fiscal_financeiro_off_hours_now?
       tz = ActiveSupport::TimeZone[TIMEZONE]
       return false unless tz
 
@@ -52,19 +51,31 @@ module Whatsapp
 
     private
 
+    def formatted_protocol
+      id = conversation.display_id.to_s
+      padded = id.length >= 4 ? id : id.rjust(4, '0')
+      "##{padded}"
+    end
+
     def parse_choice(content)
       c = content.to_s.strip
-      return c if %w[1 2 3].include?(c)
+      return c if %w[1 2 3 4].include?(c)
 
       nil
     end
 
+    def after_hours_blocked_choice?(choice)
+      %w[3 4].include?(choice) && self.class.fiscal_financeiro_off_hours_now?
+    end
+
+    def after_hours_unavailable_reply
+      'Os setores ⚠️ *Fiscal* e ⚠️ *Financeiro* não estão em atendimento neste horário. Digite 1 ou 2.'
+    end
+
     def handle_first_touch(choice)
-      if choice == '3' && self.class.financeiro_offline_now?
-        send_reply('O setor Financeiro não está em atendimento neste horário. Digite 1 ou 2 para os demais setores.')
-        attrs = conversation.additional_attributes.deep_dup
-        attrs['whatsapp_menu_triage'] = { 'status' => 'awaiting_choice' }
-        conversation.update!(additional_attributes: attrs)
+      if after_hours_blocked_choice?(choice)
+        send_reply(after_hours_unavailable_reply)
+        mark_awaiting_choice
         return
       end
 
@@ -81,8 +92,8 @@ module Whatsapp
         return
       end
 
-      if choice == '3' && self.class.financeiro_offline_now?
-        send_reply('O setor Financeiro não está em atendimento neste horário. Digite 1 ou 2 para os demais setores.')
+      if after_hours_blocked_choice?(choice)
+        send_reply(after_hours_unavailable_reply)
         return
       end
 
@@ -95,17 +106,17 @@ module Whatsapp
 
     def choice_valid_now?(choice)
       return false if choice.blank?
+      return false if %w[3 4].include?(choice) && self.class.fiscal_financeiro_off_hours_now?
 
-      return false if choice == '3' && self.class.financeiro_offline_now?
-
-      %w[1 2 3].include?(choice)
+      %w[1 2 3 4].include?(choice)
     end
 
     def team_for(choice)
       case choice
       when '1' then TEAM_PDV_ID
       when '2' then TEAM_GERENCIAL_ID
-      when '3' then TEAM_FINANCEIRO_ID
+      when '3' then TEAM_FISCAL_ID
+      when '4' then TEAM_FINANCEIRO_ID
       end
     end
 
@@ -120,37 +131,44 @@ module Whatsapp
       updates[:team_id] = team_id if team_id
       conversation.update!(updates)
 
-      send_reply("Seu protocolo de atendimento é: #{conversation.display_id}. Aguarde que em breve você será atendido.")
+      send_reply(
+        "Seu protocolo de atendimento é: #{formatted_protocol}. Aguarde que em breve você será atendido."
+      )
     end
 
     def send_menu
-      text = if self.class.financeiro_offline_now?
+      text = if self.class.fiscal_financeiro_off_hours_now?
                <<~TXT.strip
                  Olá! Escolha o assunto digitando o número:
 
-                 1 — Assuntos do PDV
-                 2 — Gerencial
-
-                 O setor Financeiro está indisponível neste horário (atendimento das 7h às 16h59).
+                 1 — PDV/PAY (Sistema dos frentistas)
+                 2 — Gerencial (Sistema de gerência do posto)
+                 ⚠️ *Fiscal* — indisponível neste horário (atendimento das 7h às 16h59).
+                 ⚠️ *Financeiro* — indisponível neste horário (atendimento das 7h às 16h59).
                TXT
              else
                <<~TXT.strip
                  Olá! Escolha o assunto digitando o número:
 
-                 1 — Assuntos do PDV
-                 2 — Gerencial
-                 3 — Financeiro
+                 1 — PDV/PAY (Sistema dos frentistas)
+                 2 — Gerencial (Sistema de gerência do posto)
+                 3 — Fiscal
+                 4 — Financeiro
                TXT
              end
 
       send_reply(text)
+      mark_awaiting_choice
+    end
+
+    def mark_awaiting_choice
       attrs = conversation.additional_attributes.deep_dup
       attrs['whatsapp_menu_triage'] = { 'status' => 'awaiting_choice' }
       conversation.update!(additional_attributes: attrs)
     end
 
     def send_invalid
-      hint = self.class.financeiro_offline_now? ? '1 ou 2' : '1, 2 ou 3'
+      hint = self.class.fiscal_financeiro_off_hours_now? ? '1 ou 2' : '1, 2, 3 ou 4'
       send_reply("Opção inválida. Digite #{hint}.")
     end
 

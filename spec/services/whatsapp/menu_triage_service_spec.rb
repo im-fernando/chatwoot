@@ -18,6 +18,7 @@ RSpec.describe Whatsapp::MenuTriageService do
 
   let(:team_pdv) { create(:team, account: account) }
   let(:team_ger) { create(:team, account: account) }
+  let(:team_fiscal) { create(:team, account: account) }
   let(:team_fin) { create(:team, account: account) }
 
   def build_message(content)
@@ -29,6 +30,7 @@ RSpec.describe Whatsapp::MenuTriageService do
     allow(SendReplyJob).to receive(:perform_later)
     stub_const('Whatsapp::MenuTriageService::TEAM_PDV_ID', team_pdv.id)
     stub_const('Whatsapp::MenuTriageService::TEAM_GERENCIAL_ID', team_ger.id)
+    stub_const('Whatsapp::MenuTriageService::TEAM_FISCAL_ID', team_fiscal.id)
     stub_const('Whatsapp::MenuTriageService::TEAM_FINANCEIRO_ID', team_fin.id)
   end
 
@@ -44,7 +46,7 @@ RSpec.describe Whatsapp::MenuTriageService do
       described_class.new(conversation, msg).perform
       conversation.reload
       expect(conversation.additional_attributes['whatsapp_menu_triage']['status']).to eq('awaiting_choice')
-      expect(conversation.messages.outgoing.last.content).to include('PDV')
+      expect(conversation.messages.outgoing.last.content).to include('PDV/PAY')
     end
 
     it 'routes immediately when first message is 1' do
@@ -54,6 +56,20 @@ RSpec.describe Whatsapp::MenuTriageService do
       expect(conversation).to be_open
       expect(conversation.team_id).to eq(team_pdv.id)
       expect(conversation.additional_attributes['whatsapp_menu_triage']['status']).to eq('completed')
+    end
+
+    it 'includes padded protocol (# + zeros) in confirmation' do
+      msg = build_message('4')
+      described_class.new(conversation, msg).perform
+      did = conversation.reload.display_id
+      padded = did.to_s.length >= 4 ? did.to_s : did.to_s.rjust(4, '0')
+      expect(conversation.messages.outgoing.last.content).to include("##{padded}")
+    end
+
+    it 'routes 4 to financeiro team' do
+      msg = build_message('4')
+      described_class.new(conversation, msg).perform
+      expect(conversation.reload.team_id).to eq(team_fin.id)
     end
 
     it 'rejects invalid option when awaiting' do
@@ -72,23 +88,26 @@ RSpec.describe Whatsapp::MenuTriageService do
       expect(conversation).to be_open
     end
 
-    context 'when financeiro is offline (18:00 America/Sao_Paulo)' do
+    context 'when fiscal and financeiro are offline (18:00 America/Sao_Paulo)' do
       around do |example|
         tz = ActiveSupport::TimeZone['America/Sao_Paulo']
         travel_to(tz.local(2025, 6, 15, 18, 0, 0)) { example.run }
       end
 
-      it 'shows menu without option 3' do
+      it 'shows *Fiscal* and *Financeiro* as unavailable in menu' do
         msg = build_message('oi')
         described_class.new(conversation, msg).perform
-        expect(conversation.messages.outgoing.last.content).not_to include('3 —')
+        body = conversation.messages.outgoing.last.content
+        expect(body).to include('*Fiscal*')
+        expect(body).to include('*Financeiro*')
       end
 
-      it 'blocks choice 3 with explanatory message' do
+      it 'blocks choice 3 or 4' do
         conversation.update!(additional_attributes: { 'whatsapp_menu_triage' => { 'status' => 'awaiting_choice' } })
-        msg = build_message('3')
+        msg = build_message('4')
         described_class.new(conversation, msg).perform
-        expect(conversation.messages.outgoing.last.content).to include('Financeiro')
+        expect(conversation.messages.outgoing.last.content).to include('*Fiscal*')
+        expect(conversation.messages.outgoing.last.content).to include('*Financeiro*')
         expect(conversation.reload).to be_pending
       end
     end

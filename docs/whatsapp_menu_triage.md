@@ -11,14 +11,14 @@ Cada número/WhatsApp pode ter o menu **ligado ou desligado** de forma independe
 
 ## Ajustar times
 
-Em `app/services/whatsapp/menu_triage_service.rb`, constantes **`TEAM_PDV_ID`**, **`TEAM_GERENCIAL_ID`**, **`TEAM_FINANCEIRO_ID`** — use os IDs dos times da conta (mesmos da URL ao editar um time).
+Em `app/services/whatsapp/menu_triage_service.rb`: **`TEAM_PDV_ID`**, **`TEAM_GERENCIAL_ID`**, **`TEAM_FISCAL_ID`**, **`TEAM_FINANCEIRO_ID`**.
 
 ## Comportamento
 
 - Novas conversas dessa inbox começam em **pending** até o cliente escolher o setor.
-- Menu **1 — PDV**, **2 — Gerencial**, **3 — Financeiro**.
-- Entre **17h e 6h59** (**America/Sao_Paulo**), a opção 3 some do menu; se digitar 3, aviso de fora do horário.
-- Opção inválida → pede 1, 2 ou 3 (ou 1 ou 2 fora do horário do financeiro).
+- **1** — PDV/PAY (Sistema dos frentistas) · **2** — Gerencial (Sistema de gerência do posto) · **3** — Fiscal · **4** — Financeiro.
+- Entre **17h e 6h59** (**America/Sao_Paulo**), **Fiscal** e **Financeiro** ficam indisponíveis (no WhatsApp: `*Fiscal*` e `*Financeiro*` em negrito no menu); só **1** e **2** aceitos.
+- Protocolo no formato **`#` + número com zeros à esquerda até 4 dígitos** (ex.: `#0007`, `#0123`).
 - Escolha válida → conversa **aberta**, time atribuído, mensagem com **protocolo** (`display_id`).
 
 ## Migração
