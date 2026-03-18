@@ -52,12 +52,12 @@ services:
     environment:
       - POSTGRES_DB=chatwoot
       - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    env_file: ../.env
 
   redis:
     image: redis:alpine
     restart: always
-    command: ["sh", "-c", "redis-server --requirepass \"$REDIS_PASSWORD\""]
+    command: ["sh", "-c", "redis-server --requirepass \"$$REDIS_PASSWORD\""]
     env_file: ../.env
     volumes:
       - redis_data:/data
