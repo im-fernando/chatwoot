@@ -27,7 +27,17 @@ apt-get install -y --no-install-recommends \
   ca-certificates curl gnupg git openssl \
   nginx ufw \
   certbot python3-certbot-nginx \
-  docker.io docker-compose-plugin
+  docker.io
+
+# Ubuntu 24.04 (noble) fornece Compose v2 como docker-compose-v2.
+# Alguns mirrors também expõem um pacote virtual "docker-compose".
+if apt-cache show docker-compose-v2 >/dev/null 2>&1; then
+  apt-get install -y --no-install-recommends docker-compose-v2
+elif apt-cache show docker-compose >/dev/null 2>&1; then
+  apt-get install -y --no-install-recommends docker-compose
+else
+  die "não achei docker-compose-v2/docker-compose via apt. Habilite universe ou instale Docker/Compose pelo repositório oficial do Docker."
+fi
 
 systemctl enable --now docker
 systemctl enable --now nginx
