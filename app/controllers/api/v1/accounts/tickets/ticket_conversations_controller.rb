@@ -28,7 +28,8 @@ class Api::V1::Accounts::Tickets::TicketConversationsController < Api::V1::Accou
   private
 
   def set_ticket
-    @ticket = policy_scope(SupportTicket).find_by!(display_id: params[:display_id])
+    did = params[:ticket_display_id].presence || params[:display_id]
+    @ticket = policy_scope(SupportTicket).find_by!(display_id: did)
   end
 
   def authorize_manage!
