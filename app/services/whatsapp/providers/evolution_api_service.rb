@@ -18,7 +18,7 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     body_text = template_info[:parameters]&.dig(0, 'type') == 'body' ? template_body_text(template_info) : nil
     body_text ||= template_info[:name].to_s
     response = HTTParty.post(
-      "#{api_base_path}/message/sendText/#{instance_name}",
+      "#{api_base_path}/message/sendText/#{escaped_instance_name}",
       headers: api_headers,
       body: { number: normalize_number(phone_number), text: body_text }.to_json
     )
@@ -31,7 +31,7 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
 
   def validate_provider_config?
     response = HTTParty.get(
-      "#{api_base_path}/instance/connectionState/#{instance_name}",
+      "#{api_base_path}/instance/connectionState/#{escaped_instance_name}",
       headers: api_headers
     )
     return false unless response.success?
@@ -46,7 +46,7 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
 
   def media_url(media_id)
     # Evolution may expose media via different endpoint; IncomingMessageEvolutionService handles download
-    "#{api_base_path}/chat/getBase64FromMediaMessage/#{instance_name}"
+    "#{api_base_path}/chat/getBase64FromMediaMessage/#{escaped_instance_name}"
   end
 
   def process_response(response, message)
@@ -75,6 +75,10 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     whatsapp_channel.provider_config['evolution_instance'].to_s
   end
 
+  def escaped_instance_name
+    CGI.escape(instance_name)
+  end
+
   def normalize_number(phone_number)
     phone_number.to_s.delete('+').strip
   end
@@ -86,7 +90,7 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     body[:quoted] = { key: { id: quoted[:message_id] }, message: { conversation: quoted[:text] } } if quoted.present?
 
     response = HTTParty.post(
-      "#{api_base_path}/message/sendText/#{instance_name}",
+      "#{api_base_path}/message/sendText/#{escaped_instance_name}",
       headers: api_headers,
       body: body.to_json
     )
@@ -137,7 +141,7 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     }
 
     response = HTTParty.post(
-      "#{api_base_path}/message/sendMedia/#{instance_name}",
+      "#{api_base_path}/message/sendMedia/#{escaped_instance_name}",
       headers: api_headers,
       body: body.to_json
     )
@@ -156,7 +160,7 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
       body = { number: number, audio: audio_data }
       body[:quoted] = quoted_payload if quoted_payload.present?
       response = HTTParty.post(
-        "#{api_base_path}/message/sendWhatsAppAudio/#{instance_name}",
+        "#{api_base_path}/message/sendWhatsAppAudio/#{escaped_instance_name}",
         headers: api_headers,
         body: body.to_json
       )
@@ -184,7 +188,7 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     }
 
     response = HTTParty.post(
-      "#{api_base_path}/message/sendMedia/#{instance_name}",
+      "#{api_base_path}/message/sendMedia/#{escaped_instance_name}",
       headers: api_headers,
       body: body.to_json
     )
@@ -213,7 +217,7 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     # Evolution API has different interactive API; send as text for MVP
     text = Whatsapp::OutgoingSignature.body_for_whatsapp_interactive(message).to_s.gsub(/\n+\z/, '')
     response = HTTParty.post(
-      "#{api_base_path}/message/sendText/#{instance_name}",
+      "#{api_base_path}/message/sendText/#{escaped_instance_name}",
       headers: api_headers,
       body: { number: normalize_number(phone_number), text: text.to_s }.to_json
     )
@@ -230,7 +234,7 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     body[:quoted] = { key: { id: quoted[:message_id] }, message: { conversation: quoted[:text] } } if quoted.present?
 
     response = HTTParty.post(
-      "#{api_base_path}/message/sendText/#{instance_name}",
+      "#{api_base_path}/message/sendText/#{escaped_instance_name}",
       headers: api_headers,
       body: body.to_json
     )
