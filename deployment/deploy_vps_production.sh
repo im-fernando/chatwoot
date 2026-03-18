@@ -132,7 +132,7 @@ echo "[5/8] Buildando e subindo Postgres/Redis..."
 docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" up -d --remove-orphans postgres redis
 
 echo "[6/8] Preparando o banco (db:chatwoot_prepare)..."
-docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" run --rm rails bash -lc "POSTGRES_STATEMENT_TIMEOUT=600s bundle exec rails db:chatwoot_prepare"
+docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" run --rm rails sh -lc "POSTGRES_STATEMENT_TIMEOUT=600s bundle exec rails db:chatwoot_prepare"
 
 echo "[7/8] Subindo Chatwoot (rails + sidekiq)..."
 docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" up -d --remove-orphans --build rails sidekiq
