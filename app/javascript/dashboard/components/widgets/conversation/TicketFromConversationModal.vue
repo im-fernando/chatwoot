@@ -69,8 +69,8 @@ const submit = async () => {
     v-model:show="localShow"
     :on-close="onModalClose"
   >
-    <div class="flex flex-col gap-4 p-6 max-w-md">
-      <h3 class="m-0 text-lg font-semibold text-n-slate-12">
+    <div class="flex flex-col gap-4 w-full min-w-0 box-border px-6 pt-14 pb-6">
+      <h3 class="m-0 text-lg font-semibold text-n-slate-12 ltr:pr-10 rtl:pl-10">
         {{ t('CONVERSATION.TICKETS.CREATE_TITLE') }}
       </h3>
       <div class="flex flex-col gap-1">

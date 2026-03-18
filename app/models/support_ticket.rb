@@ -29,19 +29,22 @@ class SupportTicket < ApplicationRecord
   validates :created_by_id, presence: true
   validate :assignee_in_account, if: -> { assignee_id.present? }
 
-  after_create_commit :load_display_id_from_db
+  before_create :assign_display_id
 
   scope :latest, -> { order(created_at: :desc) }
 
-  def load_display_id_from_db
-    self[:display_id] = self.class.where(id: id).pick(:display_id)
-  end
-
-  trigger.before(:insert).for_each(:row) do
-    "NEW.display_id := nextval('support_ticket_dpid_seq_' || NEW.account_id);"
-  end
-
   private
+
+  def assign_display_id
+    return if display_id.present?
+
+    aid = account_id.to_i
+    seq = "support_ticket_dpid_seq_#{aid}"
+    self.class.connection.execute("CREATE SEQUENCE IF NOT EXISTS #{seq}")
+    self.display_id = self.class.connection.select_value(
+      "SELECT nextval('#{seq}')"
+    ).to_i
+  end
 
   def assignee_in_account
     return if account.users.exists?(id: assignee_id)
