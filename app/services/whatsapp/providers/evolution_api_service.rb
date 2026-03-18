@@ -274,20 +274,33 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
 
     # Evolution costuma rejeitar áudio gravado no dashboard em WAV/WebM.
     # Se houver ffmpeg disponível, transcodamos pra ogg/opus.
-    converted = transcode_audio_to_ogg_opus(attachment)
+    converted = transcode_audio_to_ogg_opus(attachment, mimetype: mimetype)
     return [nil, mimetype, filename] if converted.blank?
 
     [converted, 'audio/ogg', 'voice.ogg']
   end
 
-  def transcode_audio_to_ogg_opus(attachment)
+  def transcode_audio_to_ogg_opus(attachment, mimetype:)
     content = attachment.file.download
     return nil if content.blank?
 
     require 'tempfile'
     require 'open3'
 
-    input_ext = File.extname(attachment.file.filename.to_s).presence
+    # ffmpeg detecta melhor quando o arquivo de entrada tem extensão condizente.
+    mimetype_lc = mimetype.to_s.downcase
+    ext_from_mime =
+      case mimetype_lc
+      when 'audio/wave' then '.wav'
+      when 'audio/x-aac', 'audio/aac' then '.aac'
+      when 'audio/ogg', 'audio/opus' then '.ogg'
+      when 'audio/mpeg', 'audio/mp3' then '.mp3'
+      when 'audio/mp4', 'audio/x-m4a' then '.m4a'
+      when 'audio/webm', 'audio/x-webm' then '.webm'
+      else nil
+      end
+
+    input_ext = File.extname(attachment.file.filename.to_s).presence || ext_from_mime
     input_ext = '.bin' if input_ext.blank?
     input = Tempfile.new(['chatwoot_audio_in', input_ext])
     output = Tempfile.new(['chatwoot_audio_out', '.ogg'])
