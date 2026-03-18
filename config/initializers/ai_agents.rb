@@ -3,6 +3,14 @@
 require 'agents'
 
 Rails.application.config.after_initialize do
+  # Em um banco recém-criado (ex.: após `docker compose down -v`), as migrations ainda não rodaram
+  # e a tabela `installation_configs` não existe. Além disso, tasks `db:*` carregam o app e
+  # este initializer não deve bloquear o bootstrap do banco.
+  if defined?(Rake) && Rake.respond_to?(:application)
+    top_level = Rake.application.top_level_tasks
+    next if top_level.any? { |t| t.to_s.start_with?('db:') }
+  end
+
   api_key = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
   model = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_MODEL')&.value.presence || LlmConstants::DEFAULT_MODEL
   api_endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value || LlmConstants::OPENAI_API_ENDPOINT
@@ -18,6 +26,8 @@ Rails.application.config.after_initialize do
       config.debug = false
     end
   end
+rescue ActiveRecord::StatementInvalid, ActiveRecord::NoDatabaseError => e
+  Rails.logger.warn("Skipping AI Agents SDK configuration (db not ready): #{e.class}: #{e.message}")
 rescue StandardError => e
   Rails.logger.error "Failed to configure AI Agents SDK: #{e.message}"
 end

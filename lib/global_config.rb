@@ -52,6 +52,9 @@ class GlobalConfig
 
     def db_fallback(config_key)
       InstallationConfig.find_by(name: config_key)&.value
+    rescue ActiveRecord::StatementInvalid, ActiveRecord::NoDatabaseError
+      # Banco recém-criado / migrations ainda não rodaram (ex.: installation_configs não existe)
+      nil
     end
   end
 end
