@@ -148,7 +148,7 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     process_response(response, message)
   end
 
-  # WhatsApp PTT / sendWhatsAppAudio works reliably with ogg/opus, mp3, m4a.
+  # sendWhatsAppAudio: formatos comuns ok (ogg, mp3, m4a); WAV/WebM do web → transcode M4A + ptt: true.
   # Web dashboard often records WAV or WebM — Evolution rejects those on this endpoint.
   def send_evolution_audio(phone_number, message, audio_data, mimetype, filename)
     number = normalize_number(phone_number)
@@ -157,7 +157,8 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
       quoted.present? ? { key: { id: quoted[:message_id] }, message: { conversation: quoted[:text] } } : nil
 
     if evolution_audio_ptt_friendly?(mimetype, filename)
-      body = { number: number, audio: audio_data }
+      # Evolution/WhatsApp trata melhor áudio de voz como PTT; doc de exemplo retorna audio/mp4 + ptt: true.
+      body = { number: number, audio: audio_data, ptt: true }
       body[:quoted] = quoted_payload if quoted_payload.present?
       response = HTTParty.post(
         "#{api_base_path}/message/sendWhatsAppAudio/#{escaped_instance_name}",
@@ -272,22 +273,20 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     raw_name = filename.to_s
     return [nil, mimetype, filename] if evolution_audio_ptt_friendly?(raw_mime, raw_name)
 
-    # Evolution costuma rejeitar áudio gravado no dashboard em WAV/WebM.
-    # Se houver ffmpeg disponível, transcodamos pra ogg/opus.
-    converted = transcode_audio_to_ogg_opus(attachment, mimetype: mimetype)
+    # Evolution costuma rejeitar WAV/WebM do dashboard. Preferimos M4A (audio/mp4 + PTT na API).
+    converted, out_mime, out_name = transcode_audio_for_evolution(attachment, mimetype: mimetype)
     return [nil, mimetype, filename] if converted.blank?
 
-    [converted, 'audio/ogg', 'voice.ogg']
+    [converted, out_mime, out_name]
   end
 
-  def transcode_audio_to_ogg_opus(attachment, mimetype:)
+  def transcode_audio_for_evolution(attachment, mimetype:)
     content = attachment.file.download
-    return nil if content.blank?
+    return [nil, nil, nil] if content.blank?
 
     require 'tempfile'
     require 'open3'
 
-    # ffmpeg detecta melhor quando o arquivo de entrada tem extensão condizente.
     mimetype_lc = mimetype.to_s.downcase
     ext_from_mime =
       case mimetype_lc
@@ -303,34 +302,52 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     input_ext = File.extname(attachment.file.filename.to_s).presence || ext_from_mime
     input_ext = '.bin' if input_ext.blank?
     input = Tempfile.new(['chatwoot_audio_in', input_ext])
-    output = Tempfile.new(['chatwoot_audio_out', '.ogg'])
     input.binmode
-    output.binmode
     input.write(content)
     input.rewind
 
-    cmd = [
+    # 1) M4A/AAC — alinhado à resposta da doc Evolution (audio/mp4, ptt).
+    m4a = Tempfile.new(['chatwoot_audio_out', '.m4a'])
+    m4a.binmode
+    cmd_m4a = [
       'ffmpeg', '-hide_banner', '-loglevel', 'error',
       '-y', '-i', input.path,
-      '-vn',
-      '-c:a', 'libopus',
-      '-b:a', '24k',
-      '-ar', '48000',
-      output.path
+      '-vn', '-c:a', 'aac', '-b:a', '64k', '-ar', '44100',
+      '-movflags', '+faststart',
+      m4a.path
     ]
+    _o, err_m4a, st_m4a = Open3.capture3(*cmd_m4a)
+    if st_m4a.success? && File.size?(m4a.path)
+      data = Base64.strict_encode64(File.binread(m4a.path))
+      m4a.close!
+      input.close!
+      return [data, 'audio/mp4', 'voice.m4a']
+    end
+    Rails.logger.warn("[Evolution] audio transcode to m4a failed: #{err_m4a.to_s.truncate(200)}")
+    m4a.close!
 
-    _stdout, stderr, status = Open3.capture3(*cmd)
-    unless status.success? && File.size?(output.path)
-      Rails.logger.warn("[Evolution] audio transcode failed: #{stderr.to_s.truncate(300)}")
-      return nil
+    # 2) Fallback ogg/opus
+    ogg = Tempfile.new(['chatwoot_audio_out', '.ogg'])
+    ogg.binmode
+    cmd_ogg = [
+      'ffmpeg', '-hide_banner', '-loglevel', 'error',
+      '-y', '-i', input.path,
+      '-vn', '-c:a', 'libopus', '-b:a', '24k', '-ar', '48000',
+      ogg.path
+    ]
+    _o2, err_ogg, st_ogg = Open3.capture3(*cmd_ogg)
+    unless st_ogg.success? && File.size?(ogg.path)
+      Rails.logger.warn("[Evolution] audio transcode to ogg failed: #{err_ogg.to_s.truncate(300)}")
+      ogg.close!
+      input.close!
+      return [nil, nil, nil]
     end
 
-    Base64.strict_encode64(File.binread(output.path))
+    data = Base64.strict_encode64(File.binread(ogg.path))
+    ogg.close!
+    input.close!
+    [data, 'audio/ogg', 'voice.ogg']
   rescue Errno::ENOENT
-    # ffmpeg não instalado no ambiente
-    nil
-  ensure
-    input&.close!
-    output&.close!
+    [nil, nil, nil]
   end
 end
