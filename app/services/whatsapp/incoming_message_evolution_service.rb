@@ -10,9 +10,10 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
     #
     # For CSAT text-flow (Baileys/Evolution), the next incoming message after the CSAT
     # prompt should be interpreted as the rating/feedback reply. So we reuse the
-    # most recent resolved conversation with an active csat_text_flow state.
+    # most recent resolved conversation with an active csat_text_flow state — but
+    # only if the incoming message matches the expected reply for that step.
     if csat_text_flow_enabled?
-      flow_conversation = latest_csat_text_flow_conversation
+      flow_conversation = latest_csat_text_flow_conversation_for(incoming_text_body)
       if flow_conversation.present?
         @conversation = flow_conversation
         return
@@ -26,15 +27,58 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
     inbox.channel.try(:provider) == 'evolution_api' && inbox.csat_config&.dig('text_flow_enabled') == true
   end
 
-  def latest_csat_text_flow_conversation
+  def latest_csat_text_flow_conversation_for(body)
     @contact_inbox.conversations.order(created_at: :desc).find do |c|
       next unless c.resolved?
 
       flow = c.additional_attributes.is_a?(Hash) ? c.additional_attributes['csat_text_flow'] : nil
       next unless flow.is_a?(Hash)
 
-      %w[await_rating await_feedback_optin await_feedback_text].include?(flow['state'].to_s)
+      state = flow['state'].to_s
+      next unless %w[await_rating await_feedback_optin await_feedback_text].include?(state)
+
+      if matches_csat_text_flow_reply?(state, body)
+        true
+      else
+        # If customer sends something else, clear flow so the message becomes a
+        # normal conversation (new conversation will be created by base logic).
+        clear_csat_text_flow!(c)
+        false
+      end
     end
+  end
+
+  def incoming_text_body
+    msg = messages_data&.first
+    return nil if msg.blank?
+
+    type = msg[:type].to_s
+    return nil unless type == 'text'
+
+    msg.dig(:text, :body).to_s.strip.downcase
+  end
+
+  def matches_csat_text_flow_reply?(state, body)
+    return false if body.blank?
+
+    case state
+    when 'await_rating'
+      body.match?(/\A[1-5]\z/)
+    when 'await_feedback_optin'
+      %w[sim s yes y nao não n no].include?(body)
+    when 'await_feedback_text'
+      body.present?
+    else
+      false
+    end
+  end
+
+  def clear_csat_text_flow!(conversation)
+    attrs = conversation.additional_attributes.is_a?(Hash) ? conversation.additional_attributes : {}
+    return unless attrs.key?('csat_text_flow')
+
+    attrs.delete('csat_text_flow')
+    conversation.update!(additional_attributes: attrs)
   end
 
   def processed_params
