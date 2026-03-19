@@ -4,6 +4,39 @@
 class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseService
   private
 
+  def set_conversation
+    # Default behavior (in base) creates a new conversation for each incoming message
+    # when lock_to_single_conversation is disabled and the last conversation is resolved.
+    #
+    # For CSAT text-flow (Baileys/Evolution), the next incoming message after the CSAT
+    # prompt should be interpreted as the rating/feedback reply. So we reuse the
+    # most recent resolved conversation with an active csat_text_flow state.
+    if csat_text_flow_enabled?
+      flow_conversation = latest_csat_text_flow_conversation
+      if flow_conversation.present?
+        @conversation = flow_conversation
+        return
+      end
+    end
+
+    super
+  end
+
+  def csat_text_flow_enabled?
+    inbox.channel.try(:provider) == 'evolution_api' && inbox.csat_config&.dig('text_flow_enabled') == true
+  end
+
+  def latest_csat_text_flow_conversation
+    @contact_inbox.conversations.order(created_at: :desc).find do |c|
+      next unless c.resolved?
+
+      flow = c.additional_attributes.is_a?(Hash) ? c.additional_attributes['csat_text_flow'] : nil
+      next unless flow.is_a?(Hash)
+
+      %w[await_rating await_feedback_optin await_feedback_text].include?(flow['state'].to_s)
+    end
+  end
+
   def processed_params
     @processed_params ||= build_processed_params
   end

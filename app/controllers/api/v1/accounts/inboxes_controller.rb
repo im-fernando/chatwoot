@@ -133,6 +133,7 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
     formatted = {
       'display_type' => config['display_type'] || 'emoji',
       'message' => config['message'] || '',
+      'text_flow_enabled' => config['text_flow_enabled'] || false,
       :survey_rules => {
         'operator' => config.dig('survey_rules', 'operator') || 'contains',
         'values' => config.dig('survey_rules', 'values') || []
@@ -152,7 +153,7 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
     [:name, :avatar, :greeting_enabled, :greeting_message, :enable_email_collect, :csat_survey_enabled,
      :enable_auto_assignment, :working_hours_enabled, :out_of_office_message, :timezone, :allow_messages_after_resolved,
      :lock_to_single_conversation, :portal_id, :sender_name_type, :business_name, :whatsapp_menu_triage_enabled,
-     { csat_config: [:display_type, :message, :button_text, :language,
+     { csat_config: [:display_type, :message, :button_text, :language, :text_flow_enabled,
                      { survey_rules: [:operator, { values: [] }],
                        template: [:name, :template_id, :friendly_name, :content_sid, :approval_sid, :created_at, :language, :status] }] }]
   end

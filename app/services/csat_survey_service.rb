@@ -4,6 +4,11 @@ class CsatSurveyService
   def perform
     return unless should_send_csat_survey?
 
+    if evolution_provider? && text_flow_enabled?
+      send_whatsapp_text_flow_survey
+      return
+    end
+
     if whatsapp_channel? && !evolution_provider? && template_available_and_approved?
       send_whatsapp_template_survey
     elsif inbox.twilio_whatsapp? && twilio_template_available_and_approved?
@@ -147,9 +152,43 @@ class CsatSurveyService
       account: conversation.account,
       inbox: inbox,
       message_type: :outgoing,
-      content: inbox.csat_config&.dig('message') || 'Please rate this conversation',
+      content: csat_message_content,
       content_type: :input_csat
     )
+  end
+
+  def csat_message_content
+    base = inbox.csat_config&.dig('message') || 'Please rate this conversation'
+    return base unless evolution_provider? && text_flow_enabled?
+
+    options = [
+      "1 😞 Péssimo",
+      "2 😑 Regular",
+      "3 😐 Ok",
+      "4 😀 Bom",
+      "5 😍 Excelente"
+    ].join("\n")
+
+    "#{base}\n\nResponda com um número de 1 a 5:\n#{options}"
+  end
+
+  def send_whatsapp_text_flow_survey
+    message = build_csat_message
+    message.save!
+
+    set_text_flow_state!(csat_message_id: message.id, state: 'await_rating')
+  rescue StandardError => e
+    Rails.logger.error "Error sending WhatsApp CSAT text flow for conversation #{conversation.id}: #{e.message}"
+  end
+
+  def set_text_flow_state!(csat_message_id:, state:)
+    attrs = conversation.additional_attributes.is_a?(Hash) ? conversation.additional_attributes : {}
+    attrs['csat_text_flow'] = { 'state' => state, 'csat_message_id' => csat_message_id, 'created_at' => Time.current.iso8601 }
+    conversation.update!(additional_attributes: attrs)
+  end
+
+  def text_flow_enabled?
+    csat_config['text_flow_enabled'] == true
   end
 
   def csat_config

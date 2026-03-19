@@ -881,6 +881,10 @@
     "CSAT": {
       "TITLE": "Enable CSAT",
       "SUBTITLE": "Automatically trigger CSAT surveys at the end of conversations to understand how customers feel about their support experience. Track satisfaction trends and identify areas for improvement over time.",
+      "TEXT_FLOW": {
+        "TITLE": "Collect rating via text (1-5)",
+        "SUBTITLE": "For non-official WhatsApp providers (e.g. Baileys/Evolution API), ask customers to reply with a number from 1 to 5 and optionally collect feedback as a follow-up."
+      },
       "DISPLAY_TYPE": {
         "LABEL": "Display type"
       },

@@ -391,10 +391,35 @@ class Message < ApplicationRecord
   def reopen_conversation
     return if conversation.muted?
     return unless incoming?
+    return if skip_reopen_for_csat_text_flow?
 
     conversation.open! if conversation.snoozed?
 
     reopen_resolved_conversation if conversation.resolved?
+  end
+
+  def skip_reopen_for_csat_text_flow?
+    return false unless conversation&.resolved?
+    return false unless inbox&.channel_type == 'Channel::Whatsapp'
+    return false unless inbox.channel.try(:provider) == 'evolution_api'
+    return false unless inbox.csat_config&.dig('text_flow_enabled') == true
+
+    flow = conversation.additional_attributes.is_a?(Hash) ? conversation.additional_attributes['csat_text_flow'] : nil
+    return false unless flow.is_a?(Hash)
+
+    state = flow['state'].to_s
+    body = content.to_s.strip.downcase
+
+    case state
+    when 'await_rating'
+      body.match?(/\A[1-5]\z/)
+    when 'await_feedback_optin'
+      %w[sim s yes y nao não n no].include?(body)
+    when 'await_feedback_text'
+      body.present?
+    else
+      false
+    end
   end
 
   def mark_pending_conversation_as_open_for_human_response

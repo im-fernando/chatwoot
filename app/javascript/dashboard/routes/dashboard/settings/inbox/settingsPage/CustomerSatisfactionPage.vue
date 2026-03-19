@@ -51,6 +51,7 @@ const state = reactive({
   templateButtonText: 'Please rate us',
   surveyRuleOperator: 'contains',
   templateLanguage: 'en',
+  textFlowEnabled: false,
 });
 
 const templateStatus = ref(null);
@@ -154,6 +155,7 @@ const initializeState = () => {
     message = '',
     button_text: buttonText = 'Please rate us',
     language = 'en',
+    text_flow_enabled: textFlowEnabled = false,
     survey_rules: surveyRules = {},
   } = csat_config;
 
@@ -161,6 +163,7 @@ const initializeState = () => {
   state.message = message;
   state.templateButtonText = buttonText;
   state.templateLanguage = language;
+  state.textFlowEnabled = !!textFlowEnabled;
   state.surveyRuleOperator = surveyRules.operator || 'contains';
 
   selectedLabelValues.value = Array.isArray(surveyRules.values)
@@ -428,6 +431,7 @@ const performSave = async () => {
       message: state.message,
       button_text: state.templateButtonText,
       language: state.templateLanguage,
+      text_flow_enabled: state.textFlowEnabled,
       survey_rules: {
         operator: state.surveyRuleOperator,
         values: selectedLabelValues.value,
@@ -524,6 +528,13 @@ const handleConfirmTemplateUpdate = async () => {
               class="flex flex-col gap-4 justify-between w-full lg:flex-row lg:gap-6"
             >
               <div class="flex flex-col gap-3 basis-3/5">
+                <SettingsToggleSection
+                  v-model="state.textFlowEnabled"
+                  :header="$t('INBOX_MGMT.CSAT.TEXT_FLOW.TITLE')"
+                  :description="$t('INBOX_MGMT.CSAT.TEXT_FLOW.SUBTITLE')"
+                  compact
+                />
+
                 <WithLabel
                   :label="$t('INBOX_MGMT.CSAT.MESSAGE.LABEL')"
                   name="message"

@@ -18,7 +18,18 @@ class MessageContentPresenter < SimpleDelegator
   private
 
   def should_append_survey_link?
-    input_csat? && !inbox.web_widget?
+    return false unless input_csat? && !inbox.web_widget?
+
+    # For non-official WhatsApp providers (Baileys/Evolution API), CSAT can be
+    # collected via text replies (1-5). In that mode we shouldn't append the
+    # survey link.
+    if inbox.channel_type == 'Channel::Whatsapp' &&
+       inbox.channel.try(:provider) == 'evolution_api' &&
+       inbox.csat_config&.dig('text_flow_enabled')
+      return false
+    end
+
+    true
   end
 
   def survey_url(conversation_uuid)
