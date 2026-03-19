@@ -4,7 +4,7 @@ class CsatSurveyService
   def perform
     return unless should_send_csat_survey?
 
-    if whatsapp_channel? && template_available_and_approved?
+    if whatsapp_channel? && !evolution_provider? && template_available_and_approved?
       send_whatsapp_template_survey
     elsif inbox.twilio_whatsapp? && twilio_template_available_and_approved?
       send_twilio_whatsapp_template_survey
@@ -36,6 +36,10 @@ class CsatSurveyService
   end
 
   def within_messaging_window?
+    # Evolution/Baileys doesn't have the Meta 24h session restriction, so we
+    # allow sending CSAT outside the normal reply window.
+    return true if evolution_provider?
+
     conversation.can_reply?
   end
 
@@ -72,6 +76,10 @@ class CsatSurveyService
 
   def whatsapp_channel?
     inbox.channel_type == 'Channel::Whatsapp'
+  end
+
+  def evolution_provider?
+    inbox.channel.try(:provider) == 'evolution_api'
   end
 
   def template_available_and_approved?

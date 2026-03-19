@@ -195,6 +195,25 @@ RSpec.describe Api::V1::Accounts::InboxCsatTemplatesController, type: :request d
         expect(response.parsed_body['error']).to eq('Template parameters are required')
       end
 
+      context 'when it is a WhatsApp channel with evolution_api provider' do
+        let(:whatsapp_channel) do
+          create(:channel_whatsapp, account: account, provider: 'evolution_api',
+                                     sync_templates: false, validate_provider_config: false)
+        end
+
+        it 'creates CSAT settings without calling Meta template API' do
+          post "/api/v1/accounts/#{account.id}/inboxes/#{whatsapp_inbox.id}/csat_template",
+               headers: admin.create_new_auth_token,
+               params: valid_template_params,
+               as: :json
+
+          expect(response).to have_http_status(:created)
+          response_data = response.parsed_body
+          expect(response_data['template']['name']).to be_present
+          expect(response_data['template']['template_id']).to be_nil
+        end
+      end
+
       it 'creates template successfully' do
         allow(mock_service).to receive(:get_template_status).and_return({ success: false })
         allow(mock_service).to receive(:create_template).and_return({

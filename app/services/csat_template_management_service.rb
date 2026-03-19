@@ -12,6 +12,10 @@ class CsatTemplateManagementService
 
     if @inbox.twilio_whatsapp?
       get_twilio_template_status(template)
+    elsif evolution_provider?
+      # Non-official providers (Baileys/Evolution API) don't use Meta-approved
+      # CSAT templates, so we report as not existing.
+      { template_exists: false }
     else
       get_whatsapp_template_status(template)
     end
@@ -43,6 +47,18 @@ class CsatTemplateManagementService
   def create_template_via_provider(template_params)
     if @inbox.twilio_whatsapp?
       create_twilio_template(template_params)
+    elsif evolution_provider?
+      # We don't support Meta template creation for non-official providers.
+      # Return success so the UI can save CSAT settings without requiring
+      # a Meta OAuth token.
+      template_config = build_template_config(template_params)
+      {
+        success: true,
+        template_name: template_config[:template_name],
+        template_id: nil,
+        language: template_config[:language],
+        status: 'PENDING'
+      }
     else
       create_whatsapp_template(template_params)
     end
@@ -129,6 +145,8 @@ class CsatTemplateManagementService
   end
 
   def get_whatsapp_template_status(template)
+    return { template_exists: false } if evolution_provider?
+
     template_name = template['name'] || CsatTemplateNameService.csat_template_name(@inbox.id)
     status_result = Whatsapp::CsatTemplateService.new(@inbox.channel).get_template_status(template_name)
     return { template_exists: false, error: 'Template not found' } unless status_result.is_a?(Hash)
@@ -154,6 +172,9 @@ class CsatTemplateManagementService
 
     if @inbox.twilio_whatsapp?
       delete_existing_twilio_template(template)
+    elsif evolution_provider?
+      # Nothing to delete on non-official providers.
+      true
     else
       delete_existing_whatsapp_template(template)
     end
@@ -179,6 +200,8 @@ class CsatTemplateManagementService
   end
 
   def delete_existing_whatsapp_template(template)
+    return true if evolution_provider?
+
     template_name = template['name']
     return true if template_name.blank?
 
@@ -194,5 +217,9 @@ class CsatTemplateManagementService
       Rails.logger.warn "Failed to delete existing CSAT template '#{template_name}' for inbox #{@inbox.id}: #{deletion_result[:response_body]}"
       false
     end
+  end
+
+  def evolution_provider?
+    @inbox.channel.try(:provider) == 'evolution_api'
   end
 end

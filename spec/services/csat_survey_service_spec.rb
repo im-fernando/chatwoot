@@ -348,6 +348,34 @@ describe CsatSurveyService do
           expect(whatsapp_conversation.messages.where(content_type: :input_csat)).to be_empty
         end
       end
+
+    end
+
+    context 'when it is a WhatsApp channel with evolution_api provider' do
+      let(:whatsapp_channel) do
+        create(:channel_whatsapp, account: account, provider: 'evolution_api',
+                                  sync_templates: false, validate_provider_config: false)
+      end
+      let(:whatsapp_inbox) { create(:inbox, channel: whatsapp_channel, account: account, csat_survey_enabled: true) }
+      let(:whatsapp_contact) { create(:contact, account: account) }
+      let(:whatsapp_contact_inbox) { create(:contact_inbox, contact: whatsapp_contact, inbox: whatsapp_inbox, source_id: '1234567890') }
+      let(:whatsapp_conversation) do
+        create(:conversation, contact_inbox: whatsapp_contact_inbox, inbox: whatsapp_inbox, account: account, status: :resolved)
+      end
+      let(:whatsapp_service) { described_class.new(conversation: whatsapp_conversation) }
+
+      before do
+        allow(whatsapp_conversation).to receive(:can_reply?).and_return(false)
+        expect(Whatsapp::Providers::EvolutionApiService).not_to receive(:new)
+      end
+
+      it 'sends CSAT survey even outside messaging window (no template flow)' do
+        whatsapp_service.perform
+
+        expect(MessageTemplates::Template::CsatSurvey).to have_received(:new).with(conversation: whatsapp_conversation)
+        expect(csat_template).to have_received(:perform)
+        expect(Conversations::ActivityMessageJob).not_to have_received(:perform_later)
+      end
     end
   end
 
