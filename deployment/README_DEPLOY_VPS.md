@@ -1,6 +1,6 @@
 # Deploy produção (VPS Ubuntu) — Chatwoot
 
-Este fluxo sobe o Chatwoot em produção via Docker, com Nginx + Let’s Encrypt, servindo em `https://app.jssystem-server.xyz`.
+Este fluxo sobe o Chatwoot em produção via Docker, com Nginx + Let's Encrypt, servindo em `https://app.jssystem-server.xyz`.
 
 ## Pré-requisitos
 
@@ -8,7 +8,7 @@ Este fluxo sobe o Chatwoot em produção via Docker, com Nginx + Let’s Encrypt
 - DNS A/AAAA apontando `app.jssystem-server.xyz` para o IP da VPS (`147.93.1.171`)
 - Seu repositório no GitHub (com suas modificações)
 
-## Como rodar
+## Deploy inicial
 
 Na VPS:
 
@@ -23,6 +23,38 @@ sudo DOMAIN=app.jssystem-server.xyz \
   ./deploy.sh
 ```
 
+## Atualização sem downtime (blue-green)
+
+Após o deploy inicial, use o script de atualização que faz **zero-downtime**:
+
+```bash
+cd /opt/chatwoot
+sudo ./deployment/update_zero_downtime.sh
+```
+
+### Como funciona
+
+O script usa dois containers Rails alternando entre si (blue na porta 3001, green na porta 3002):
+
+1. Builda a nova imagem Docker (container antigo continua rodando)
+2. Roda migrations no container novo
+3. Sobe o container novo e aguarda health check
+4. Troca o upstream do Nginx para o container novo (`nginx -s reload`, sem drop)
+5. Aguarda draining de conexões e para o container antigo
+6. Reinicia o Sidekiq
+
+Se o container novo não ficar healthy, o deploy é **abortado automaticamente** sem causar downtime.
+
+### Variáveis de ambiente opcionais
+
+| Variável | Padrão | Descrição |
+|---|---|---|
+| `APP_DIR` | `/opt/chatwoot` | Diretório do projeto |
+| `BRANCH` | `master` | Branch do git para atualizar |
+| `DOMAIN` | `app.jssystem-server.xyz` | Domínio (para encontrar a config do Nginx) |
+| `HEALTH_TIMEOUT` | `300` | Tempo máximo (segundos) para aguardar health check |
+| `DRAIN_SECONDS` | `10` | Tempo de espera para drenar conexões antes de parar o antigo |
+
 ## Onde ficam os arquivos
 
 - Código clonado: `/opt/chatwoot` (pode mudar via `APP_DIR`)
@@ -34,4 +66,3 @@ sudo DOMAIN=app.jssystem-server.xyz \
 - O script cria um `.env` de produção **apenas se não existir**. Se você já tem `.env` pronto, copie antes ou edite depois.
 - Para e-mails (reset de senha, notificações etc.), configure SMTP no `.env`.
 - O template de Nginx tem um bloco opcional para proxy do Evolution em `http://127.0.0.1:8080/` via `/evolution/`.
-

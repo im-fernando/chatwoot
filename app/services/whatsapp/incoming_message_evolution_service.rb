@@ -150,7 +150,17 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
       msg_hash[:text] = { body: evolution_text_content(msg) }
     when 'image', 'video', 'audio', 'document', 'sticker'
       cap = evolution_caption(msg, ev_type)
-      msg_hash[ev_type.to_sym] = cap.present? ? { id: id, caption: cap } : { id: id }
+      payload = { id: id }
+      payload[:caption] = cap if cap.present?
+
+      message_content = msg["#{ev_type}Message"] || msg["#{ev_type}Message".to_sym] || {}
+      filename = message_content['fileName'] || message_content[:fileName]
+      mimetype = message_content['mimetype'] || message_content[:mimetype]
+
+      payload[:filename] = filename if filename.present?
+      payload[:mimetype] = mimetype if mimetype.present?
+
+      msg_hash[ev_type.to_sym] = payload
     when 'location'
       msg_hash['location'] = evolution_location(msg)
     when 'contacts'
@@ -225,10 +235,28 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
 
     decoded = Base64.decode64(base64_data)
     ext = content_extension(attachment_payload)
-    temp = Tempfile.new(['evolution_media', ".#{ext}"])
+    
+    filename = attachment_payload[:filename].presence || attachment_payload['filename'].presence
+    temp_name = filename.present? ? [File.basename(filename, ".*"), ".#{ext}"] : ['evolution_media', ".#{ext}"]
+
+    temp = Tempfile.new(temp_name)
     temp.binmode
     temp.write(decoded)
     temp.rewind
+
+    if filename.present?
+      temp.define_singleton_method(:original_filename) do
+        filename
+      end
+    end
+
+    mimetype = attachment_payload[:mimetype].presence || attachment_payload['mimetype'].presence
+    if mimetype.present?
+      temp.define_singleton_method(:content_type) do
+        mimetype
+      end
+    end
+
     temp
   rescue StandardError => e
     Rails.logger.error "[Evolution] Failed to download media: #{e.message}"
@@ -236,8 +264,11 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
   end
 
   def content_extension(attachment_payload)
+    filename = attachment_payload[:filename].presence || attachment_payload['filename'].presence
+    return filename.split('.').last if filename.present? && filename.include?('.')
+
     # message_type is e.g. 'image', 'video'; use a simple default
     type = messages_data&.first&.dig(:type).to_s
-    { 'image' => 'jpg', 'video' => 'mp4', 'audio' => 'ogg', 'document' => 'bin', 'sticker' => 'webp' }[type] || 'bin'
+    { 'image' => 'jpg', 'video' => 'mp4', 'audio' => 'ogg', 'document' => 'pdf', 'sticker' => 'webp' }[type] || 'bin'
   end
 end
