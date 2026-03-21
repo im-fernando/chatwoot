@@ -10,9 +10,12 @@ class Webhooks::EvolutionController < ActionController::API
       return
     end
 
-    if channel_inactive?(channel)
+    event = @payload['event'].presence || @payload[:event].presence
+    bypass_inactivity = %w[connection.update logout.instance].include?(event.to_s)
+
+    if !bypass_inactivity && channel_inactive?(channel)
       Rails.logger.warn("Rejected Evolution webhook for inactive channel: #{channel.phone_number}")
-      render json: { error: 'Inactive channel' }, status: :unprocessable_entity
+      render json: { error: 'Inactive channel' }, status: :unprocessable_content
       return
     end
 
