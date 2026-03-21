@@ -123,6 +123,7 @@ class Conversation < ApplicationRecord
   after_update_commit :execute_after_update_commit_callbacks
   after_create_commit :notify_conversation_creation
   after_create_commit :load_attributes_created_by_db_triggers
+  after_create_commit :sync_evolution_contact_avatar
 
   delegate :auto_resolve_after, to: :account
 
@@ -337,6 +338,13 @@ class Conversation < ApplicationRecord
     return unless additional_attributes['referer']
 
     self['additional_attributes']['referer'] = nil unless url_valid?(additional_attributes['referer'])
+  end
+
+  def sync_evolution_contact_avatar
+    return unless inbox&.channel_type == 'Channel::Whatsapp'
+    return unless inbox.channel.provider == 'evolution_api'
+
+    Whatsapp::FetchEvolutionProfilePictureJob.perform_later(contact.id, inbox.channel.id)
   end
 
   # creating db triggers

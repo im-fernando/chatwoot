@@ -20,6 +20,9 @@ class Webhooks::EvolutionEventsJob < ApplicationJob
     elsif LOGOUT_INSTANCE_EVENTS.include?(event.to_s)
       handle_logout_instance(channel)
       return
+    elsif %w[CONTACTS_UPDATE contacts.update].include?(event.to_s)
+      handle_contacts_update(channel, payload)
+      return
     end
 
     if channel_is_inactive?(channel)
@@ -81,6 +84,27 @@ class Webhooks::EvolutionEventsJob < ApplicationJob
     unless channel.reauthorization_required?
       Rails.logger.warn("EvolutionEventsJob: Channel #{channel.id} is disconnected. Marking as reauthorization_required.")
       channel.prompt_reauthorization!
+    end
+  end
+
+  def handle_contacts_update(channel, payload)
+    data = payload['data'].presence || payload[:data].presence
+    return if data.blank?
+
+    updates = data.is_a?(Array) ? data : [data]
+
+    updates.each do |update|
+      remote_jid = update['remoteJid'] || update[:remoteJid]
+      profile_pic_url = update['profilePicUrl'] || update[:profilePicUrl]
+
+      next if remote_jid.blank? || profile_pic_url.blank?
+
+      phone = "+#{remote_jid.to_s.split('@').first.split(':').first}"
+      contact = channel.account.contacts.find_by(phone_number: phone)
+      
+      if contact.present?
+        Avatar::AvatarFromUrlJob.perform_later(contact, profile_pic_url)
+      end
     end
   end
 
