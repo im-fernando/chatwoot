@@ -20,11 +20,15 @@ defineProps({
   },
 });
 
-const { sender } = useMessageContext();
+const { sender, status, progressPercentage } = useMessageContext();
 const { t } = useI18n();
 
 const senderName = computed(() => {
   return sender?.value?.name || '';
+});
+
+const isUploading = computed(() => {
+  return status?.value === 'progress' && progressPercentage?.value > 0 && progressPercentage?.value < 100;
 });
 </script>
 
@@ -59,8 +63,18 @@ const senderName = computed(() => {
         </div>
       </div>
       <div v-if="action" class="mb-2">
+        <div
+          v-if="isUploading"
+          class="w-full relative bg-n-solid-3 px-4 py-2 rounded-lg text-sm text-center border border-n-container overflow-hidden"
+        >
+          <div
+            class="absolute left-0 top-0 h-full bg-n-brand/20 transition-all duration-300 ease-out"
+            :style="{ width: `${progressPercentage}%` }"
+          ></div>
+          <span class="relative z-10">{{ progressPercentage }}%</span>
+        </div>
         <a
-          v-if="action.href"
+          v-else-if="action.href"
           :href="action.href"
           rel="noreferrer noopener nofollow"
           target="_blank"

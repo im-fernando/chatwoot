@@ -34,6 +34,11 @@ export default {
         return this.installationLimit;
       }
 
+      // Bypass strict limits for Whatsapp / Evolution API
+      if (channelType === 'Channel::Whatsapp') {
+        return 500;
+      }
+
       const channelLimit = getMaxUploadSizeByChannel({
         channelType,
         medium: this.inbox?.medium, // e.g. 'sms' | 'whatsapp'
@@ -72,6 +77,14 @@ export default {
         return;
       }
 
+      // Add a unique ID to the file object to track its progress
+      const fileId = Date.now().toString(36) + Math.random().toString(36).substr(2);
+      file.id = fileId;
+
+      if (typeof this.attachFile === 'function') {
+        this.attachFile({ file, isUploading: true, progress: 0 });
+      }
+
       const upload = new DirectUpload(
         file.file,
         `/api/v1/accounts/${this.accountId}/conversations/${this.currentChat.id}/direct_uploads`,
@@ -82,14 +95,31 @@ export default {
               this.currentUser.access_token
             );
           },
+          directUploadWillStoreFileWithXHR: request => {
+            request.upload.addEventListener('progress', event => {
+              if (event.lengthComputable) {
+                const progress = Math.round((event.loaded / event.total) * 100);
+                if (typeof this.updateUploadProgress === 'function') {
+                  this.updateUploadProgress(fileId, progress);
+                }
+              }
+            });
+          },
         }
       );
 
       upload.create((error, blob) => {
         if (error) {
           useAlert(error);
+          if (typeof this.removeAttachmentById === 'function') {
+            this.removeAttachmentById(fileId);
+          }
         } else {
-          this.attachFile({ file, blob });
+          if (typeof this.finishAttachment === 'function') {
+            this.finishAttachment(fileId, { file, blob });
+          } else {
+            this.attachFile({ file, blob });
+          }
         }
       });
     },

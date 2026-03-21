@@ -134,6 +134,7 @@ const props = defineProps({
   senderId: { type: Number, default: null },
   senderType: { type: String, default: null },
   sourceId: { type: String, default: '' }, // eslint-disable-line vue/no-unused-properties
+  progressPercentage: { type: Number, default: 0 },
 });
 
 const emit = defineEmits(['retry']);

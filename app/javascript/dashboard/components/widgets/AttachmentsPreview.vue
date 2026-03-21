@@ -50,31 +50,37 @@ const fileName = file => {
     <div
       v-for="(attachment, index) in nonRecordedAudioAttachments"
       :key="attachment.id"
-      class="flex items-center p-1 bg-n-slate-3 gap-1 rounded-md w-[15rem]"
+      class="flex items-center p-1 bg-n-slate-3 gap-1 rounded-md w-[15rem] relative overflow-hidden"
     >
-      <div class="max-w-[4rem] flex-shrink-0 w-6 flex items-center">
+      <div class="max-w-[4rem] flex-shrink-0 w-6 flex items-center z-10">
         <img
           v-if="isTypeImage(attachment.resource)"
-          class="object-cover w-6 h-6 rounded-sm"
+          class="object-cover w-6 h-6 rounded-sm transition-opacity duration-300"
+          :class="attachment.isUploading ? 'opacity-50 grayscale' : 'opacity-100'"
           :src="attachment.thumb"
         />
-        <span v-else class="relative w-6 h-6 text-lg text-left -top-px">
+        <span v-else class="relative w-6 h-6 text-lg text-left -top-px" :class="attachment.isUploading ? 'opacity-50' : ''">
           📄
         </span>
       </div>
-      <div class="max-w-3/5 min-w-[50%] overflow-hidden text-ellipsis">
+      <div class="max-w-3/5 min-w-[50%] overflow-hidden text-ellipsis z-10">
         <span
           class="h-4 overflow-hidden text-sm font-medium text-ellipsis whitespace-nowrap"
         >
           {{ fileName(attachment.resource) }}
         </span>
       </div>
-      <div class="w-[30%] justify-center">
-        <span class="overflow-hidden text-xs text-ellipsis whitespace-nowrap">
-          {{ formatFileSize(attachment.resource) }}
+      <div class="w-[30%] justify-center z-10">
+        <span class="overflow-hidden text-xs text-ellipsis whitespace-nowrap" :class="attachment.isUploading ? 'text-woot-500 font-semibold' : ''">
+          <template v-if="attachment.isUploading">
+            {{ attachment.progress || 0 }}%
+          </template>
+          <template v-else>
+            {{ formatFileSize(attachment.resource) }}
+          </template>
         </span>
       </div>
-      <div class="flex items-center justify-center">
+      <div class="flex items-center justify-center z-10">
         <Button
           ghost
           slate
@@ -83,6 +89,11 @@ const fileName = file => {
           @click="onRemoveAttachment(index)"
         />
       </div>
+      <div
+        v-if="attachment.isUploading"
+        class="absolute bottom-0 left-0 h-1 bg-woot-500 transition-all duration-300 ease-out z-0"
+        :style="{ width: `${attachment.progress || 0}%` }"
+      />
     </div>
   </div>
 </template>

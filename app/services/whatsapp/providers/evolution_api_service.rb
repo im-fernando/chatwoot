@@ -61,7 +61,11 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
 
   def error_message(response)
     parsed = response.parsed_response
-    parsed['message'] || parsed.dig('response', 'message')&.join(', ') || response.body
+    if parsed.is_a?(Hash)
+      parsed['message'] || (parsed.dig('response', 'message').is_a?(Array) ? parsed.dig('response', 'message').join(', ') : parsed.dig('response', 'message')) || response.body
+    else
+      response.body.to_s.truncate(500) # Evita salvar todo o HTML no banco de dados.
+    end
   end
 
   private

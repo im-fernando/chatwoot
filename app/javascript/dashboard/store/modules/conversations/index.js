@@ -234,6 +234,18 @@ export const mutations = {
     }
   },
 
+  [types.UPDATE_MESSAGE_PROGRESS](_state, { id, progress }) {
+    for (const chat of _state.allConversations) {
+      if (chat.messages) {
+        const message = chat.messages.find(m => m.id === id);
+        if (message) {
+          message.progress_percentage = progress;
+          break;
+        }
+      }
+    }
+  },
+
   [types.DELETE_CONVERSATION](_state, conversationId) {
     _state.allConversations = _state.allConversations.filter(
       c => c.id !== conversationId

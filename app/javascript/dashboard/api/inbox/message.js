@@ -64,6 +64,7 @@ class MessageApi extends ApiClient {
     bccEmails = '',
     toEmails = '',
     templateParams,
+    onUploadProgress,
   }) {
     return axios({
       method: 'post',
@@ -79,6 +80,7 @@ class MessageApi extends ApiClient {
         toEmails,
         templateParams,
       }),
+      onUploadProgress,
     });
   }
 

@@ -294,7 +294,20 @@ const actions = {
       });
       const response = hasMessageFailedWithExternalError(pendingMessage)
         ? await MessageApi.retry(conversationId, id)
-        : await MessageApi.create(pendingMessage);
+        : await MessageApi.create({
+            ...pendingMessage,
+            onUploadProgress: progressEvent => {
+              if (progressEvent.lengthComputable) {
+                const progress = Math.round(
+                  (progressEvent.loaded * 100) / progressEvent.total
+                );
+                commit(types.UPDATE_MESSAGE_PROGRESS, {
+                  id: pendingMessage.id,
+                  progress,
+                });
+              }
+            },
+          });
       commit(types.ADD_MESSAGE, {
         ...response.data,
         status: MESSAGE_STATUS.SENT,

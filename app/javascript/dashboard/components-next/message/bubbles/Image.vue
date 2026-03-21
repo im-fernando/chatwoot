@@ -14,7 +14,11 @@ import GalleryView from 'dashboard/components/widgets/conversation/components/Ga
 
 const { t } = useI18n();
 
-const { filteredCurrentChatAttachments, attachments } = useMessageContext();
+const { filteredCurrentChatAttachments, attachments, status, progressPercentage } = useMessageContext();
+
+const isUploading = computed(() => {
+  return status?.value === 'progress' && progressPercentage?.value > 0 && progressPercentage?.value < 100;
+});
 
 const attachment = computed(() => {
   return attachments.value[0];
@@ -73,6 +77,7 @@ const handleImageError = () => {
       <div class="absolute right-2 bottom-2 hidden group-hover:flex gap-2">
         <Button xs solid slate icon="i-lucide-expand" class="opacity-60" />
         <Button
+          v-if="!isUploading"
           xs
           solid
           slate
@@ -82,6 +87,15 @@ const handleImageError = () => {
           :disabled="isDownloading"
           @click.stop="downloadAttachment"
         />
+      </div>
+      <div
+        v-if="isUploading"
+        class="absolute inset-x-2 bottom-2 bg-black/40 rounded-full overflow-hidden h-1.5 z-20"
+      >
+        <div
+          class="h-full bg-white transition-all duration-300 ease-out"
+          :style="{ width: `${progressPercentage}%` }"
+        ></div>
       </div>
     </div>
   </BaseBubble>

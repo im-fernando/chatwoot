@@ -222,6 +222,7 @@ export default {
     isReplyButtonDisabled() {
       if (this.isEditorDisabled) return true;
       if (this.isATwitterInbox) return true;
+      if (this.attachedFiles.some(file => file.isUploading)) return true;
       if (this.hasAttachments || this.hasRecordedAudio) return false;
 
       return (
@@ -1042,19 +1043,40 @@ export default {
         isPrivate,
       });
     },
-    attachFile({ blob, file }) {
+    attachFile({ blob, file, isUploading = false, progress = 0 }) {
       const reader = new FileReader();
       reader.readAsDataURL(file.file);
       reader.onloadend = () => {
         this.attachedFiles.push({
+          id: file.id,
           currentChatId: this.currentChat.id,
           resource: blob || file,
           isPrivate: this.isPrivate,
           thumb: reader.result,
           blobSignedId: blob ? blob.signed_id : undefined,
           isRecordedAudio: file?.isRecordedAudio || false,
+          isUploading,
+          progress,
         });
       };
+    },
+    updateUploadProgress(fileId, progress) {
+      const attachment = this.attachedFiles.find(a => a.id === fileId);
+      if (attachment) {
+        attachment.progress = progress;
+      }
+    },
+    removeAttachmentById(fileId) {
+      this.attachedFiles = this.attachedFiles.filter(a => a.id !== fileId);
+    },
+    finishAttachment(fileId, { file, blob }) {
+      const attachment = this.attachedFiles.find(a => a.id === fileId);
+      if (attachment) {
+        attachment.isUploading = false;
+        attachment.progress = 100;
+        attachment.resource = blob || file;
+        attachment.blobSignedId = blob ? blob.signed_id : undefined;
+      }
     },
     removeAttachment(attachments) {
       this.attachedFiles = attachments;

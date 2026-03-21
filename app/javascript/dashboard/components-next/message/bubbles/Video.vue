@@ -10,7 +10,11 @@ import { ATTACHMENT_TYPES } from '../constants';
 const emit = defineEmits(['error']);
 const hasError = ref(false);
 const showGallery = ref(false);
-const { filteredCurrentChatAttachments, attachments } = useMessageContext();
+const { filteredCurrentChatAttachments, attachments, status, progressPercentage } = useMessageContext();
+
+const isUploading = computed(() => {
+  return status?.value === 'progress' && progressPercentage?.value > 0 && progressPercentage?.value < 100;
+});
 
 const handleError = () => {
   hasError.value = true;
@@ -50,6 +54,15 @@ const isReel = computed(() => {
         @click.stop
         @error="handleError"
       />
+      <div
+        v-if="isUploading"
+        class="absolute inset-x-2 bottom-2.5 bg-black/40 rounded-full overflow-hidden h-1.5 z-20"
+      >
+        <div
+          class="h-full bg-white transition-all duration-300 ease-out"
+          :style="{ width: `${progressPercentage}%` }"
+        ></div>
+      </div>
     </div>
   </BaseBubble>
   <GalleryView
