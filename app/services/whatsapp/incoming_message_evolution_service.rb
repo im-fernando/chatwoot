@@ -132,6 +132,7 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
     return 'sticker' if msg['stickerMessage'].present? || msg[:stickerMessage].present?
     return 'location' if msg['locationMessage'].present? || msg[:locationMessage].present?
     return 'contacts' if msg['contactsArrayMessage'].present? || msg[:contactsArrayMessage].present?
+    return 'contacts' if msg['contactMessage'].present? || msg[:contactMessage].present?
 
     'text'
   end
@@ -196,11 +197,31 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
   end
 
   def evolution_contacts(msg)
-    arr = msg['contactsArrayMessage'].presence || msg[:contactsArrayMessage].presence
-    contacts = arr&.dig('contacts') || arr&.dig(:contacts) || []
+    contacts = []
+    
+    if msg['contactsArrayMessage'].present? || msg[:contactsArrayMessage].present?
+      arr = msg['contactsArrayMessage'].presence || msg[:contactsArrayMessage].presence
+      contacts = arr&.dig('contacts') || arr&.dig(:contacts) || []
+    elsif msg['contactMessage'].present? || msg[:contactMessage].present?
+      contacts = [msg['contactMessage'].presence || msg[:contactMessage].presence]
+    end
+
     contacts.map do |c|
-      name = c['name'] || c[:name] || {}
-      { 'name' => { 'formatted_name' => name['formattedName'] || name[:formattedName] }, 'phones' => [] }
+      display_name = c['displayName'] || c[:displayName]
+      name_obj = c['name'] || c[:name] || {}
+      formatted_name = display_name || name_obj['formattedName'] || name_obj[:formattedName] || 'Contato'
+      vcard = c['vcard'] || c[:vcard]
+      
+      phones = []
+      if vcard.present?
+        # Extract phones from VCARD
+        phones = vcard.scan(/TEL[^:]*:(.+)/i).flatten.map { |p| { 'phone' => p.strip } }
+      end
+
+      { 
+        'name' => { 'first_name' => formatted_name, 'last_name' => '' }, 
+        'phones' => phones
+      }
     end
   end
 
