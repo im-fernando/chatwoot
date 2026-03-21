@@ -6,8 +6,6 @@ import { useAlert } from 'dashboard/composables';
 import { useI18n } from 'vue-i18n';
 import { emitter } from 'shared/helpers/mitt';
 import EmailTranscriptModal from './EmailTranscriptModal.vue';
-import TicketFromConversationModal from './TicketFromConversationModal.vue';
-import LinkConversationTicketModal from './LinkConversationTicketModal.vue';
 import ResolveAction from '../../buttons/ResolveAction.vue';
 import ButtonV4 from 'dashboard/components-next/button/Button.vue';
 import DropdownMenu from 'dashboard/components-next/dropdown-menu/DropdownMenu.vue';
@@ -24,8 +22,6 @@ const { t } = useI18n();
 
 const [showEmailActionsModal, toggleEmailModal] = useToggle(false);
 const [showActionsDropdown, toggleDropdown] = useToggle(false);
-const showCreateTicketModal = ref(false);
-const showLinkTicketModal = ref(false);
 
 const currentChat = computed(() => store.getters.getSelectedChat);
 
@@ -55,21 +51,6 @@ const actionMenuItems = computed(() => {
     value: 'send_transcript',
   });
 
-  if (currentChat.value?.id) {
-    items.push({
-      icon: 'i-lucide-ticket',
-      label: t('CONVERSATION.TICKETS.CREATE_FROM_CONVERSATION'),
-      action: 'create_ticket',
-      value: 'create_ticket',
-    });
-    items.push({
-      icon: 'i-lucide-link',
-      label: t('CONVERSATION.TICKETS.LINK_TO_TICKET'),
-      action: 'link_ticket',
-      value: 'link_ticket',
-    });
-  }
-
   return items;
 });
 
@@ -84,10 +65,6 @@ const handleActionClick = ({ action }) => {
     useAlert(t('CONTACT_PANEL.UNMUTED_SUCCESS'));
   } else if (action === 'send_transcript') {
     toggleEmailModal();
-  } else if (action === 'create_ticket') {
-    showCreateTicketModal.value = true;
-  } else if (action === 'link_ticket') {
-    showLinkTicketModal.value = true;
   }
 };
 
@@ -144,18 +121,6 @@ onUnmounted(() => {
       :show="showEmailActionsModal"
       :current-chat="currentChat"
       @cancel="toggleEmailModal"
-    />
-    <TicketFromConversationModal
-      v-if="currentChat?.id"
-      v-model:show="showCreateTicketModal"
-      :conversation-display-id="currentChat.id"
-      @close="showCreateTicketModal = false"
-    />
-    <LinkConversationTicketModal
-      v-if="currentChat?.id"
-      v-model:show="showLinkTicketModal"
-      :conversation-display-id="currentChat.id"
-      @close="showLinkTicketModal = false"
     />
   </div>
 </template>
