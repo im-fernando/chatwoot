@@ -2,8 +2,7 @@ version: '3'
 
 services:
   base: &base
-    # ⚠️ MUDE AQUI: Coloque seu usuário do Docker Hub (ex: fernando/chatwoot-producao:latest)
-    image: SEU_USUARIO/chatwoot-producao:latest
+    image: fernandomorais1/chatwoot-producao:latest
     env_file: .env ## Change this file for customized env variables
     volumes:
       - storage_data:/app/storage

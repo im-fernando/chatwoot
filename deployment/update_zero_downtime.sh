@@ -70,10 +70,10 @@ git checkout "${BRANCH}"
 git pull --ff-only
 ok "Código atualizado"
 
-# ─── 2. Build da nova imagem ────────────────────────────────────────
-log "Buildando nova imagem Docker (o container antigo continua rodando)..."
-docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" build "rails-${NEW_SLOT}"
-ok "Build concluído"
+# ─── 2. Pull da nova imagem ─────────────────────────────────────────
+log "Baixando nova imagem Docker (o container antigo continua rodando)..."
+docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" pull
+ok "Pull concluído"
 
 # ─── 3. Rodar migrations no container novo (sem servir HTTP) ────────
 log "Rodando db:chatwoot_prepare no container novo..."

@@ -128,14 +128,15 @@ EOF
   chmod 600 "${SECRETS_OUT}"
 fi
 
-echo "[5/8] Buildando e subindo Postgres/Redis..."
+echo "[5/8] Baixando imagens e subindo Postgres/Redis..."
+docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" pull
 docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" up -d --remove-orphans postgres redis
 
 echo "[6/8] Preparando o banco (db:chatwoot_prepare)..."
 docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" --profile blue run --rm rails-blue sh -lc "POSTGRES_STATEMENT_TIMEOUT=600s bundle exec rails db:chatwoot_prepare"
 
 echo "[7/8] Subindo Chatwoot (rails-blue + sidekiq)..."
-docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" --profile blue up -d --remove-orphans --build rails-blue sidekiq
+docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" --profile blue up -d --remove-orphans rails-blue sidekiq
 
 echo "[8/8] Configurando Nginx para ${DOMAIN} e emitindo SSL..."
 install -d /etc/ssl
