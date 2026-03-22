@@ -4,7 +4,7 @@ set -euo pipefail
 DOMAIN="${DOMAIN:-app.jssystem-server.xyz}"
 LE_EMAIL="${LE_EMAIL:-admin@${DOMAIN}}"
 REPO_URL="${REPO_URL:-}"
-BRANCH="${BRANCH:-master}"
+BRANCH="${BRANCH:-develop}"
 APP_DIR="${APP_DIR:-/opt/chatwoot}"
 
 COMPOSE_FILE_REL="${COMPOSE_FILE_REL:-deployment/docker-compose.production.custom.yaml}"

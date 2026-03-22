@@ -19,7 +19,7 @@ chmod +x deploy.sh
 sudo DOMAIN=app.jssystem-server.xyz \
   LE_EMAIL=admin@app.jssystem-server.xyz \
   REPO_URL=https://github.com/<SEU_USUARIO>/<SEU_REPO>.git \
-  BRANCH=master \
+  BRANCH=develop \
   ./deploy.sh
 ```
 
@@ -50,7 +50,7 @@ Se o container novo não ficar healthy, o deploy é **abortado automaticamente**
 | Variável | Padrão | Descrição |
 |---|---|---|
 | `APP_DIR` | `/opt/chatwoot` | Diretório do projeto |
-| `BRANCH` | `master` | Branch do git para atualizar |
+| `BRANCH` | `develop` | Branch do git para atualizar |
 | `DOMAIN` | `app.jssystem-server.xyz` | Domínio (para encontrar a config do Nginx) |
 | `HEALTH_TIMEOUT` | `300` | Tempo máximo (segundos) para aguardar health check |
 | `DRAIN_SECONDS` | `10` | Tempo de espera para drenar conexões antes de parar o antigo |

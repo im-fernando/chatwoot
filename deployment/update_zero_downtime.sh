@@ -11,7 +11,7 @@
 set -euo pipefail
 
 APP_DIR="${APP_DIR:-/opt/chatwoot}"
-BRANCH="${BRANCH:-master}"
+BRANCH="${BRANCH:-develop}"
 COMPOSE_FILE_REL="${COMPOSE_FILE_REL:-deployment/docker-compose.production.custom.yaml}"
 DOMAIN="${DOMAIN:-app.jssystem-server.xyz}"
 NGINX_CONF="/etc/nginx/sites-available/chatwoot_${DOMAIN}.conf"
