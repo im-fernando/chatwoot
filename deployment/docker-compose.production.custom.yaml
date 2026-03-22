@@ -1,14 +1,6 @@
 services:
   rails-blue:
-    image: chatwoot:custom-production
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-      args:
-        RAILS_ENV: production
-        BUNDLE_WITHOUT: development:test
-        RAILS_SERVE_STATIC_FILES: 'true'
-        EXECJS_RUNTIME: Disabled
+    image: fernandomorais1/chatwoot-producao:latest
     env_file: ../.env
     volumes:
       - storage_data:/app/storage
@@ -36,15 +28,7 @@ services:
       - blue
 
   rails-green:
-    image: chatwoot:custom-production
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-      args:
-        RAILS_ENV: production
-        BUNDLE_WITHOUT: development:test
-        RAILS_SERVE_STATIC_FILES: 'true'
-        EXECJS_RUNTIME: Disabled
+    image: fernandomorais1/chatwoot-producao:latest
     env_file: ../.env
     volumes:
       - storage_data:/app/storage
@@ -72,7 +56,7 @@ services:
       - green
 
   sidekiq:
-    image: chatwoot:custom-production
+    image: fernandomorais1/chatwoot-producao:latest
     env_file: ../.env
     volumes:
       - storage_data:/app/storage

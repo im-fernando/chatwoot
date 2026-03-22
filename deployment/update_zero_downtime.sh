@@ -43,8 +43,10 @@ detect_active_slot() {
     echo "blue"
   elif grep -q '127\.0\.0\.1:3002' "${NGINX_CONF}"; then
     echo "green"
+  elif grep -E -q '(127\.0\.0\.1|localhost):3000' "${NGINX_CONF}"; then
+    echo "legacy"
   else
-    die "não consegui detectar o slot ativo no Nginx (esperava porta 3001 ou 3002)"
+    die "não consegui detectar o slot ativo no Nginx (esperava porta 3000, 3001 ou 3002)"
   fi
 }
 
@@ -54,10 +56,14 @@ if [[ "$ACTIVE_SLOT" == "blue" ]]; then
   NEW_SLOT="green"
   NEW_PORT="3002"
   OLD_PORT="3001"
-else
+elif [[ "$ACTIVE_SLOT" == "green" ]]; then
   NEW_SLOT="blue"
   NEW_PORT="3001"
   OLD_PORT="3002"
+else
+  NEW_SLOT="blue"
+  NEW_PORT="3001"
+  OLD_PORT="3000"
 fi
 
 log "Slot ativo: ${ACTIVE_SLOT} (porta ${OLD_PORT})"
@@ -72,19 +78,19 @@ ok "Código atualizado"
 
 # ─── 2. Pull da nova imagem ─────────────────────────────────────────
 log "Baixando nova imagem Docker (o container antigo continua rodando)..."
-docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" pull
+docker compose -p deployment --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" pull
 ok "Pull concluído"
 
 # ─── 3. Rodar migrations no container novo (sem servir HTTP) ────────
 log "Rodando db:chatwoot_prepare no container novo..."
-docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" \
+docker compose -p deployment --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" \
   run --rm "rails-${NEW_SLOT}" \
   sh -lc "POSTGRES_STATEMENT_TIMEOUT=600s bundle exec rails db:chatwoot_prepare"
 ok "Migrations concluídas"
 
 # ─── 4. Subir o container novo ──────────────────────────────────────
 log "Subindo container rails-${NEW_SLOT} na porta ${NEW_PORT}..."
-docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" \
+docker compose -p deployment --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" \
   --profile "${NEW_SLOT}" \
   up -d --no-deps "rails-${NEW_SLOT}"
 ok "Container rails-${NEW_SLOT} iniciado"
@@ -95,7 +101,7 @@ SECONDS=0
 until curl -sf "http://127.0.0.1:${NEW_PORT}/auth/sign_in" > /dev/null 2>&1; do
   if (( SECONDS >= HEALTH_TIMEOUT )); then
     warn "Timeout no health check! Parando container novo e mantendo o antigo."
-    docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" \
+    docker compose -p deployment --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" \
       --profile "${NEW_SLOT}" stop "rails-${NEW_SLOT}"
     die "O container novo não ficou healthy em ${HEALTH_TIMEOUT}s. Deploy abortado, sem downtime."
   fi
@@ -124,13 +130,18 @@ sleep "${DRAIN_SECONDS}"
 
 # ─── 8. Parar o container antigo ────────────────────────────────────
 log "Parando container rails-${ACTIVE_SLOT}..."
-docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" \
-  --profile "${ACTIVE_SLOT}" stop "rails-${ACTIVE_SLOT}"
+if [[ "${ACTIVE_SLOT}" == "legacy" ]]; then
+  docker stop deployment-rails-1 chatwoot-rails-1 rails 2>/dev/null || true
+  docker rm deployment-rails-1 chatwoot-rails-1 rails 2>/dev/null || true
+else
+  docker compose -p deployment --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" \
+    --profile "${ACTIVE_SLOT}" stop "rails-${ACTIVE_SLOT}"
+fi
 ok "Container rails-${ACTIVE_SLOT} parado"
 
 # ─── 9. Atualizar o Sidekiq ─────────────────────────────────────────
 log "Reiniciando Sidekiq..."
-docker compose --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" \
+docker compose -p deployment --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" \
   up -d --no-deps sidekiq
 ok "Sidekiq reiniciado"
 
