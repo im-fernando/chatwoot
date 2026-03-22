@@ -1,7 +1,7 @@
 services:
   rails-blue:
     image: fernandomorais1/chatwoot-producao:latest
-    env_file: ../.env
+    env_file: .env
     volumes:
       - storage_data:/app/storage
     depends_on:
@@ -29,7 +29,7 @@ services:
 
   rails-green:
     image: fernandomorais1/chatwoot-producao:latest
-    env_file: ../.env
+    env_file: .env
     volumes:
       - storage_data:/app/storage
     depends_on:
@@ -57,7 +57,7 @@ services:
 
   sidekiq:
     image: fernandomorais1/chatwoot-producao:latest
-    env_file: ../.env
+    env_file: .env
     volumes:
       - storage_data:/app/storage
     depends_on:
@@ -80,13 +80,13 @@ services:
     environment:
       - POSTGRES_DB=chatwoot_production
       - POSTGRES_USER=postgres
-    env_file: ../.env
+    env_file: .env
 
   redis:
     image: redis:alpine
     restart: always
     command: ["sh", "-c", "redis-server --requirepass \"$$REDIS_PASSWORD\""]
-    env_file: ../.env
+    env_file: .env
     volumes:
       - redis_data:/data
 
