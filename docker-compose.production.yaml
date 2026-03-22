@@ -2,15 +2,8 @@ version: '3'
 
 services:
   base: &base
-    image: chatwoot:custom-production
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
-      args:
-        RAILS_ENV: production
-        BUNDLE_WITHOUT: development:test
-        RAILS_SERVE_STATIC_FILES: 'true'
-        EXECJS_RUNTIME: Disabled
+    # ⚠️ MUDE AQUI: Coloque seu usuário do Docker Hub (ex: fernando/chatwoot-producao:latest)
+    image: SEU_USUARIO/chatwoot-producao:latest
     env_file: .env ## Change this file for customized env variables
     volumes:
       - storage_data:/app/storage
