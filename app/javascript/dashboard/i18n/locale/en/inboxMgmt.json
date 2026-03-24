@@ -321,6 +321,8 @@
           "ERROR_MESSAGE": "We were not able to save the WhatsApp channel"
         },
         "EVOLUTION_API": {
+          "AUTO_CONNECT_TOGGLE": "Create Evolution instance and webhook automatically (requires EVOLUTION_API_MASTER_KEY on the server).",
+          "PHONE_OPTIONAL_AUTO": "Optional in automatic mode — used as the channel phone if provided; otherwise a temporary number is assigned until WhatsApp connects.",
           "CONTINUE_TO_QR": "Continue",
           "CONTINUE_TO_AGENTS": "Continue to add agents",
           "INSTANCE_NAME_LABEL": "Instance name",
@@ -339,7 +341,10 @@
           "QR_REFRESH": "Refresh QR code",
           "QR_CONNECTED": "WhatsApp is connected.",
           "PAIRING_CODE": "Pairing code:",
-          "QR_POLL_HINT": "This page checks the connection every few seconds. You can refresh the QR if it expired."
+          "QR_POLL_HINT": "This page checks the connection every few seconds. You can refresh the QR if it expired.",
+          "DISCONNECTED_BANNER": "WhatsApp is disconnected from Evolution API. Scan the QR code again to restore the connection.",
+          "CONNECT_WITH_QR": "Connect with QR code",
+          "BACK_TO_INBOX_SETTINGS": "Back to inbox settings"
         }
       },
       "VOICE": {

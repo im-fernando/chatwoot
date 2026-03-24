@@ -42,7 +42,12 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
       @inbox.save!
     end
   rescue Whatsapp::EvolutionProvisioningService::ProvisioningError => e
-    render json: { message: e.message }, status: :unprocessable_entity
+    render json: { message: e.message }, status: :unprocessable_content
+  rescue ActiveRecord::RecordInvalid => e
+    render json: {
+      message: e.record.errors.full_messages.join(', '),
+      attributes: e.record.errors.attribute_names
+    }, status: :unprocessable_content
   end
 
   def evolution_connect
@@ -116,13 +121,17 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
   end
 
   def create_channel
-    return unless allowed_channel_types.include?(permitted_params[:channel][:type])
+    channel_root = permitted_params[:channel]
+    return if channel_root.blank?
+    return unless allowed_channel_types.include?(channel_root[:type])
 
     if evolution_auto_provision?
+      ch = whatsapp_channel_params || {}
       return Whatsapp::EvolutionProvisioningService.new(
         account: Current.account,
         inbox_name: permitted_params[:name],
-        api_base_url: permitted_params[:channel][:provider_config]&.dig(:api_base_url)
+        api_base_url: ch.dig(:provider_config, :api_base_url),
+        phone_number: ch[:phone_number]
       ).create_channel!
     end
 
@@ -130,10 +139,16 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
   end
 
   def evolution_auto_provision?
-    ch = permitted_params[:channel]
-    return false unless ch[:type] == 'whatsapp' && ch[:provider].to_s == 'evolution_api'
+    ch = whatsapp_channel_params
+    return false if ch.blank?
+
+    return false unless ch[:type].to_s == 'whatsapp' && ch[:provider].to_s == 'evolution_api'
 
     ActiveModel::Type::Boolean.new.cast(ch.dig(:provider_config, :auto_provision))
+  end
+
+  def whatsapp_channel_params
+    permitted_params(Channel::Whatsapp::EDITABLE_ATTRS)[:channel]
   end
 
   def ensure_evolution_whatsapp_channel!
@@ -175,7 +190,7 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
   def validate_and_update_email_channel(channel_attributes)
     validate_email_channel(channel_attributes)
   rescue StandardError => e
-    render json: { message: e }, status: :unprocessable_entity and return
+    render json: { message: e }, status: :unprocessable_content and return
   end
 
   def reauthorize_and_update_channel(channel_attributes)
@@ -227,6 +242,7 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
   end
 
   def channel_type_from_params
+    type = permitted_params[:channel]&.[](:type)
     {
       'web_widget' => Channel::WebWidget,
       'api' => Channel::Api,
@@ -235,7 +251,7 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
       'telegram' => Channel::Telegram,
       'whatsapp' => Channel::Whatsapp,
       'sms' => Channel::Sms
-    }[permitted_params[:channel][:type]]
+    }[type]
   end
 
   def get_channel_attributes(channel_type)

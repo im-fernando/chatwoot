@@ -40,7 +40,10 @@ export default {
       component: SettingsContent,
       props: params => {
         const showBackButton = params.name !== 'settings_inbox_list';
-        const fullWidth = params.name === 'settings_inbox_show';
+        const fullWidth = [
+          'settings_inbox_show',
+          'settings_inbox_evolution_qr',
+        ].includes(params.name);
         return {
           headerTitle: 'INBOX_MGMT.HEADER',
           icon: 'mail-inbox-all',
@@ -102,6 +105,15 @@ export default {
               component: AddAgents,
             },
           ],
+        },
+        {
+          path: ':inboxId/evolution-qr',
+          name: 'settings_inbox_evolution_qr',
+          component: EvolutionWhatsappQr,
+          meta: {
+            featureFlag: FEATURE_FLAGS.INBOX_MANAGEMENT,
+            permissions: ['administrator'],
+          },
         },
         {
           path: ':inboxId/:tab?',

@@ -16,6 +16,7 @@ import DuplicateInboxBanner from './channels/instagram/DuplicateInboxBanner.vue'
 import MicrosoftReauthorize from './channels/microsoft/Reauthorize.vue';
 import GoogleReauthorize from './channels/google/Reauthorize.vue';
 import WhatsappReauthorize from './channels/whatsapp/Reauthorize.vue';
+import InboxReconnectionRequired from './components/InboxReconnectionRequired.vue';
 import InboxHealthAPI from 'dashboard/api/inboxHealth';
 import PreChatFormSettings from './PreChatForm/Settings.vue';
 import WeeklyAvailability from './components/WeeklyAvailability.vue';
@@ -62,6 +63,7 @@ export default {
     InstagramReauthorize,
     TiktokReauthorize,
     WhatsappReauthorize,
+    InboxReconnectionRequired,
     DuplicateInboxBanner,
     Editor,
     Avatar,
@@ -319,6 +321,11 @@ export default {
         this.inbox.reauthorization_required
       );
     },
+    evolutionDisconnected() {
+      return (
+        this.isEvolutionWhatsAppChannel && this.inbox.reauthorization_required
+      );
+    },
     whatsappRegistrationIncomplete() {
       if (
         !this.healthData ||
@@ -369,6 +376,15 @@ export default {
       this.$store.dispatch('teams/get');
       this.$store.dispatch('labels/get');
       this.$store.dispatch('portals/index');
+    },
+    goToEvolutionQrReconnect() {
+      this.$router.push({
+        name: 'settings_inbox_evolution_qr',
+        params: {
+          accountId: this.accountId,
+          inboxId: this.inbox.id,
+        },
+      });
     },
     syncInboxData() {
       if (!this.inbox || !this.inbox.id) return;
@@ -646,6 +662,18 @@ export default {
           :inbox="inbox"
           class="mb-4"
           :class="bannerMaxWidth"
+        />
+        <InboxReconnectionRequired
+          v-if="evolutionDisconnected"
+          :description="
+            $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION_API.DISCONNECTED_BANNER')
+          "
+          :action-label="
+            $t('INBOX_MGMT.ADD.WHATSAPP.EVOLUTION_API.CONNECT_WITH_QR')
+          "
+          class="mb-4"
+          :class="bannerMaxWidth"
+          @reauthorize="goToEvolutionQrReconnect"
         />
         <DuplicateInboxBanner
           v-if="hasDuplicateInstagramInbox"

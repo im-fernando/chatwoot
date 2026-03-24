@@ -22,7 +22,25 @@ class Channel::Whatsapp < ApplicationRecord
   include Reauthorizable
 
   self.table_name = 'channel_whatsapp'
-  EDITABLE_ATTRS = [:phone_number, :provider, { provider_config: {} }].freeze
+  # provider_config uses an explicit list so nested keys (e.g. auto_provision) are never stripped by strong params
+  EDITABLE_ATTRS = [
+    :phone_number,
+    :provider,
+    {
+      provider_config: %i[
+        api_key
+        phone_number_id
+        business_account_id
+        webhook_verify_token
+        source
+        evolution_instance
+        api_base_url
+        auto_provision
+        skip_connection_validation
+        verification_pin
+      ]
+    }
+  ].freeze
 
   # default at the moment is 360dialog lets change later.
   PROVIDERS = %w[default whatsapp_cloud evolution_api].freeze

@@ -53,6 +53,7 @@ en:
     evolution:
       master_key_missing: EVOLUTION_API_MASTER_KEY is not configured for this installation
       provision_failed: Could not read Evolution API instance credentials from the server response
+      dns_unreachable_hint: If Chatwoot runs in Docker, ensure the container can resolve and reach this host (Docker DNS, extra_hosts, or use an internal base URL).
     webhook:
       invalid: Invalid events
     signup:
