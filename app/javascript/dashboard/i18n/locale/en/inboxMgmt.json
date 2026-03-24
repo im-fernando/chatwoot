@@ -240,8 +240,8 @@
           "WHATSAPP_CLOUD_DESC": "Quick setup through Meta",
           "TWILIO_DESC": "Connect via Twilio credentials",
           "360_DIALOG": "360Dialog",
-          "EVOLUTION_API": "Evolution API",
-          "EVOLUTION_API_DESC": "Connect via Evolution API instance"
+          "EVOLUTION_API": "Unofficial API",
+          "EVOLUTION_API_DESC": "Connect via QR Code"
         },
         "SELECT_PROVIDER": {
           "TITLE": "Select your API provider",
@@ -321,13 +321,25 @@
           "ERROR_MESSAGE": "We were not able to save the WhatsApp channel"
         },
         "EVOLUTION_API": {
+          "CONTINUE_TO_QR": "Continue",
+          "CONTINUE_TO_AGENTS": "Continue to add agents",
           "INSTANCE_NAME_LABEL": "Instance name",
           "INSTANCE_NAME_PLACEHOLDER": "Your Evolution API instance name",
           "INSTANCE_NAME_ERROR": "Instance name is required",
           "API_BASE_URL_LABEL": "API base URL (optional)",
           "API_BASE_URL_PLACEHOLDER": "https://your-evolution-api.com",
           "WEBHOOK_TITLE": "Webhook URL",
-          "WEBHOOK_DESCRIPTION": "Configure this URL in your Evolution API instance. Enable at least the MESSAGES_UPSERT event."
+          "WEBHOOK_DESCRIPTION": "Configure this URL in your Evolution API instance. Enable at least the MESSAGES_UPSERT event.",
+          "QR_TITLE": "Scan the QR code",
+          "QR_INSTRUCTION": "Open WhatsApp on your phone, go to Linked devices, and scan this code. When the connection is active, you can continue.",
+          "QR_LOADING": "Loading QR code…",
+          "QR_FETCH_ERROR": "Could not load the QR code. Check Evolution API and try again.",
+          "QR_EMPTY": "The Evolution API did not return QR data. Try refresh or check the server logs.",
+          "QR_GENERATION_ERROR": "Could not build the QR image from the response.",
+          "QR_REFRESH": "Refresh QR code",
+          "QR_CONNECTED": "WhatsApp is connected.",
+          "PAIRING_CODE": "Pairing code:",
+          "QR_POLL_HINT": "This page checks the connection every few seconds. You can refresh the QR if it expired."
         }
       },
       "VOICE": {

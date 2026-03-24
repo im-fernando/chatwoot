@@ -63,6 +63,7 @@ class Webhooks::EvolutionEventsJob < ApplicationJob
     
     case state.to_s
     when 'open'
+      clear_skip_connection_validation(channel)
       reactivate_channel!(channel)
     when 'close', 'refused'
       deactivate_channel!(channel)
@@ -71,6 +72,12 @@ class Webhooks::EvolutionEventsJob < ApplicationJob
 
   def handle_logout_instance(channel)
     deactivate_channel!(channel)
+  end
+
+  def clear_skip_connection_validation(channel)
+    return unless channel.provider_config['skip_connection_validation'] == true
+
+    channel.update!(provider_config: channel.provider_config.except('skip_connection_validation'))
   end
 
   def reactivate_channel!(channel)

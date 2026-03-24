@@ -30,6 +30,8 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
   end
 
   def validate_provider_config?
+    return true if whatsapp_channel.provider_config['skip_connection_validation'] == true
+
     response = HTTParty.get(
       "#{api_base_path}/instance/connectionState/#{escaped_instance_name}",
       headers: api_headers

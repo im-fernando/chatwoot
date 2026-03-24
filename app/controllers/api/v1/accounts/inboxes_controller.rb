@@ -4,7 +4,7 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
   before_action :fetch_agent_bot, only: [:set_agent_bot]
   before_action :validate_limit, only: [:create]
   # we are already handling the authorization in fetch inbox
-  before_action :check_authorization, except: [:show]
+  before_action :check_authorization, except: [:show, :evolution_connect, :evolution_connection_status]
 
   include Api::V1::Accounts::Concerns::WhatsappHealthManagement
 
@@ -41,6 +41,39 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
       )
       @inbox.save!
     end
+  rescue Whatsapp::EvolutionProvisioningService::ProvisioningError => e
+    render json: { message: e.message }, status: :unprocessable_entity
+  end
+
+  def evolution_connect
+    return unless ensure_evolution_whatsapp_channel!
+
+    channel = @inbox.channel
+    base = evolution_channel_base_url(channel)
+    instance = CGI.escape(channel.provider_config['evolution_instance'].to_s)
+    response = HTTParty.get(
+      "#{base}/instance/connect/#{instance}",
+      headers: channel.api_headers,
+      timeout: 45
+    )
+
+    render json: { status: response.code, data: response.parsed_response }
+  end
+
+  def evolution_connection_status
+    return unless ensure_evolution_whatsapp_channel!
+
+    channel = @inbox.channel
+    base = evolution_channel_base_url(channel)
+    instance = CGI.escape(channel.provider_config['evolution_instance'].to_s)
+    response = HTTParty.get(
+      "#{base}/instance/connectionState/#{instance}",
+      headers: channel.api_headers,
+      timeout: 20
+    )
+
+    state = response.parsed_response.dig('instance', 'state')
+    render json: { status: response.code, connection_state: state }
   end
 
   def update
@@ -85,7 +118,36 @@ class Api::V1::Accounts::InboxesController < Api::V1::Accounts::BaseController
   def create_channel
     return unless allowed_channel_types.include?(permitted_params[:channel][:type])
 
+    if evolution_auto_provision?
+      return Whatsapp::EvolutionProvisioningService.new(
+        account: Current.account,
+        inbox_name: permitted_params[:name],
+        api_base_url: permitted_params[:channel][:provider_config]&.dig(:api_base_url)
+      ).create_channel!
+    end
+
     account_channels_method.create!(permitted_params(channel_type_from_params::EDITABLE_ATTRS)[:channel].except(:type))
+  end
+
+  def evolution_auto_provision?
+    ch = permitted_params[:channel]
+    return false unless ch[:type] == 'whatsapp' && ch[:provider].to_s == 'evolution_api'
+
+    ActiveModel::Type::Boolean.new.cast(ch.dig(:provider_config, :auto_provision))
+  end
+
+  def ensure_evolution_whatsapp_channel!
+    channel = @inbox.channel
+    if channel.is_a?(Channel::Whatsapp) && channel.provider == 'evolution_api'
+      return true
+    end
+
+    render json: { message: 'Not an unofficial WhatsApp inbox' }, status: :bad_request
+    false
+  end
+
+  def evolution_channel_base_url(channel)
+    channel.provider_config['api_base_url'].presence || ENV.fetch('EVOLUTION_API_BASE_URL', 'http://localhost:8080').to_s.sub(%r{/$}, '')
   end
 
   def allowed_channel_types

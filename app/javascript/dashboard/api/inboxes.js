@@ -48,6 +48,14 @@ class Inboxes extends CacheEnabledApiClient {
       template,
     });
   }
+
+  getEvolutionConnect(inboxId) {
+    return axios.get(`${this.url}/${inboxId}/evolution_connect`);
+  }
+
+  getEvolutionConnectionStatus(inboxId) {
+    return axios.get(`${this.url}/${inboxId}/evolution_connection_status`);
+  }
 }
 
 export default new Inboxes();

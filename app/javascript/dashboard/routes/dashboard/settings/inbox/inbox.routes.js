@@ -10,6 +10,7 @@ import InboxChannel from './InboxChannels.vue';
 import ChannelList from './ChannelList.vue';
 import AddAgents from './AddAgents.vue';
 import FinishSetup from './FinishSetup.vue';
+import EvolutionWhatsappQr from './channels/EvolutionWhatsappQr.vue';
 
 export default {
   routes: [
@@ -65,6 +66,15 @@ export default {
               path: ':inbox_id/finish',
               name: 'settings_inbox_finish',
               component: FinishSetup,
+              meta: {
+                featureFlag: FEATURE_FLAGS.INBOX_MANAGEMENT,
+                permissions: ['administrator'],
+              },
+            },
+            {
+              path: ':inbox_id/evolution-qr',
+              name: 'settings_inboxes_evolution_qr',
+              component: EvolutionWhatsappQr,
               meta: {
                 featureFlag: FEATURE_FLAGS.INBOX_MANAGEMENT,
                 permissions: ['administrator'],

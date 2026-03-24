@@ -220,6 +220,8 @@ Rails.application.routes.draw do
             post :sync_templates, on: :member
             get :health, on: :member
             post :register_webhook, on: :member
+            get :evolution_connect, on: :member
+            get :evolution_connection_status, on: :member
             if ChatwootApp.enterprise?
               resource :conference, only: %i[create destroy], controller: 'conference' do
                 get :token, on: :member
