@@ -103,6 +103,16 @@ const actions = {
     }
   },
 
+  reloadConversationAfterMerge: async ({ commit, dispatch }, conversationId) => {
+    commit(types.RESET_CONVERSATION_MESSAGES_CACHE, conversationId);
+    try {
+      await dispatch('fetchPreviousMessages', { conversationId });
+      commit(types.SET_CHAT_DATA_FETCHED, conversationId);
+    } catch (error) {
+      // Ignore error
+    }
+  },
+
   fetchAllAttachments: async ({ commit }, conversationId) => {
     let attachments = [];
 

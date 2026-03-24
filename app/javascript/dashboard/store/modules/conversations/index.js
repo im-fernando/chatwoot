@@ -102,6 +102,15 @@ export const mutations = {
     }
   },
 
+  [types.RESET_CONVERSATION_MESSAGES_CACHE](_state, conversationId) {
+    const chat = getConversationById(_state)(conversationId);
+    if (!chat) return;
+
+    chat.messages = [];
+    chat.dataFetched = false;
+    chat.allMessagesLoaded = false;
+  },
+
   [types.SET_CURRENT_CHAT_WINDOW](_state, activeChat) {
     if (activeChat) {
       _state.selectedChatId = activeChat.id;

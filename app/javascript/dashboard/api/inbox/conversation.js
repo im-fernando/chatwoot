@@ -140,6 +140,16 @@ class ConversationApi extends ApiClient {
   delete(conversationId) {
     return axios.delete(`${this.url}/${conversationId}`);
   }
+
+  merge({ conversationId, sourceConversationId, retainConversationId }) {
+    const body = {
+      source_conversation_id: sourceConversationId,
+    };
+    if (retainConversationId != null && retainConversationId !== '') {
+      body.retain_conversation_id = retainConversationId;
+    }
+    return axios.post(`${this.url}/${conversationId}/merge`, body);
+  }
 }
 
 export default new ConversationApi();

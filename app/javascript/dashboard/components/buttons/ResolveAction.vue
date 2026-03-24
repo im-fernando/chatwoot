@@ -19,6 +19,7 @@ import {
 import ButtonGroup from 'dashboard/components-next/buttonGroup/ButtonGroup.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
 import ConversationResolveAttributesModal from 'dashboard/components-next/ConversationWorkflow/ConversationResolveAttributesModal.vue';
+import ConversationMergeModal from 'dashboard/components-next/Conversation/ConversationMergeModal.vue';
 
 const store = useStore();
 const getters = useStoreGetters();
@@ -28,6 +29,7 @@ const { checkMissingAttributes } = useConversationRequiredAttributes();
 const arrowDownButtonRef = ref(null);
 const isLoading = ref(false);
 const resolveAttributesModalRef = ref(null);
+const mergeModalRef = ref(null);
 
 const [showActionsDropdown, toggleDropdown] = useToggle();
 const closeDropdown = () => toggleDropdown(false);
@@ -50,6 +52,10 @@ const isSnoozed = computed(
 
 const showAdditionalActions = computed(
   () => !isPending.value && !isSnoozed.value
+);
+
+const canMergeConversation = computed(
+  () => !!currentChat.value.meta?.sender?.id
 );
 
 const showOpenButton = computed(() => {
@@ -79,6 +85,11 @@ const getConversationParams = () => {
 const openSnoozeModal = () => {
   const ninja = document.querySelector('ninja-keys');
   ninja.open({ parent: 'snooze_conversation' });
+};
+
+const openMergeConversationModal = async () => {
+  closeDropdown();
+  await mergeModalRef.value?.open();
 };
 
 const toggleStatus = (status, snoozedUntil, customAttributes = null) => {
@@ -224,6 +235,18 @@ useEmitter(CMD_RESOLVE_CONVERSATION, onCmdResolveConversation);
       class="border rounded-lg shadow-lg border-n-strong dark:border-n-strong box-content p-2 w-fit z-10 bg-n-alpha-3 backdrop-blur-[100px] absolute block left-auto top-full mt-0.5 start-0 xl:start-auto xl:end-0 max-w-[12.5rem] min-w-[9.75rem] [&_ul>li]:mb-0"
     >
       <WootDropdownMenu class="mb-0">
+        <WootDropdownItem v-if="!isPending && canMergeConversation">
+          <Button
+            :label="t('CONVERSATION.RESOLVE_DROPDOWN.MERGE_CONVERSATION')"
+            ghost
+            slate
+            sm
+            start
+            icon="i-lucide-git-merge"
+            class="w-full"
+            @click="openMergeConversationModal"
+          />
+        </WootDropdownItem>
         <WootDropdownItem v-if="!isPending">
           <Button
             :label="t('CONVERSATION.RESOLVE_DROPDOWN.SNOOZE_UNTIL')"
@@ -253,6 +276,10 @@ useEmitter(CMD_RESOLVE_CONVERSATION, onCmdResolveConversation);
     <ConversationResolveAttributesModal
       ref="resolveAttributesModalRef"
       @submit="handleResolveWithAttributes"
+    />
+    <ConversationMergeModal
+      ref="mergeModalRef"
+      :conversation="currentChat"
     />
   </div>
 </template>

@@ -142,7 +142,38 @@ class Api::V1::Accounts::ConversationsController < Api::V1::Accounts::BaseContro
     head :ok
   end
 
+  def merge
+    other = Current.account.conversations.find_by!(display_id: merge_params[:source_conversation_id])
+    retain_display_id = merge_params[:retain_conversation_id].presence&.to_i || @conversation.display_id
+    retained = Current.account.conversations.find_by!(display_id: retain_display_id)
+
+    unless [@conversation.id, other.id].include?(retained.id)
+      raise StandardError, 'Retained conversation must be the open conversation or the one selected to merge'
+    end
+
+    target = retained
+    source = (retained.id == @conversation.id) ? other : @conversation
+
+    authorize target, :merge?
+    authorize source, :merge?
+
+    Conversations::MergeService.new(
+      account: Current.account,
+      target_conversation: target,
+      source_conversation: source
+    ).perform
+
+    @conversation = target
+    render :show
+  rescue StandardError => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
   private
+
+  def merge_params
+    params.permit(:source_conversation_id, :retain_conversation_id)
+  end
 
   def permitted_update_params
     # TODO: Move the other conversation attributes to this method and remove specific endpoints for each attribute

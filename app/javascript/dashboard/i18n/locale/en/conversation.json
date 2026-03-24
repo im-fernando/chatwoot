@@ -119,6 +119,7 @@
       }
     },
     "RESOLVE_DROPDOWN": {
+      "MERGE_CONVERSATION": "Merge conversation",
       "MARK_PENDING": "Mark as pending",
       "SNOOZE_UNTIL": "Snooze",
       "SNOOZE": {
@@ -127,6 +128,18 @@
         "TOMORROW": "Tomorrow",
         "NEXT_WEEK": "Next week"
       }
+    },
+    "MERGE": {
+      "TITLE": "Merge conversation",
+      "DESCRIPTION": "Select another conversation with this contact in the same inbox. Messages from one will be moved into the conversation you choose to keep; the other will be removed.",
+      "KEEP_LABEL": "Keep conversation",
+      "KEEP_CURRENT": "Open now ({id})",
+      "KEEP_SELECTED": "Selected row ({id})",
+      "CONFIRM": "Merge",
+      "SUCCESS": "Conversations merged",
+      "ERROR": "Could not merge conversations. Please try again.",
+      "EMPTY": "There are no other conversations with this contact in this inbox to merge.",
+      "CONVERSATION_LABEL": "Conversation #{id}"
     },
     "MENTION": {
       "AGENTS": "Agents",

@@ -105,6 +105,7 @@
       "TICKET_NUMBER": "Número do ticket da conversa"
     },
     "RESOLVE_DROPDOWN": {
+      "MERGE_CONVERSATION": "Mesclar conversa",
       "MARK_PENDING": "Deixar pendente",
       "SNOOZE_UNTIL": "Adiar",
       "SNOOZE": {
@@ -113,6 +114,18 @@
         "TOMORROW": "Amanhã",
         "NEXT_WEEK": "Próxima semana"
       }
+    },
+    "MERGE": {
+      "TITLE": "Mesclar conversa",
+      "DESCRIPTION": "Selecione outra conversa deste contato na mesma caixa de entrada. As mensagens de uma serão movidas para a conversa que você escolher manter; a outra será removida.",
+      "KEEP_LABEL": "Manter conversa",
+      "KEEP_CURRENT": "Aberta agora ({id})",
+      "KEEP_SELECTED": "Linha selecionada ({id})",
+      "CONFIRM": "Mesclar",
+      "SUCCESS": "Conversas mescladas",
+      "ERROR": "Não foi possível mesclar as conversas. Tente novamente.",
+      "EMPTY": "Não há outras conversas deste contato nesta caixa de entrada para mesclar.",
+      "CONVERSATION_LABEL": "Conversa #{id}"
     },
     "MENTION": {
       "AGENTS": "Agentes",
