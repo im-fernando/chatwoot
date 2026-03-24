@@ -124,12 +124,13 @@ export default {
     },
     onFileChange() {
       const file = this.$refs.imageUploadInput.files[0];
+      if (!file) return;
 
       if (checkFileSizeLimit(file, MAXIMUM_FILE_UPLOAD_SIZE)) {
-        this.uploadImageToStorage(file);
+        this.uploadArticleAttachment(file);
       } else {
         useAlert(
-          this.$t('HELP_CENTER.ARTICLE_EDITOR.IMAGE_UPLOAD.ERROR_FILE_SIZE', {
+          this.$t('HELP_CENTER.ARTICLE_EDITOR.FILE_UPLOAD.ERROR_FILE_SIZE', {
             size: MAXIMUM_FILE_UPLOAD_SIZE,
           })
         );
@@ -137,7 +138,49 @@ export default {
 
       this.$refs.imageUploadInput.value = '';
     },
-    async uploadImageToStorage(file) {
+    isDisplayableImage(file) {
+      if (!file) return false;
+      const { type, name } = file;
+      if (type && type.startsWith('image/')) return true;
+      const ext = name?.split('.').pop()?.toLowerCase();
+      return [
+        'png',
+        'jpg',
+        'jpeg',
+        'gif',
+        'webp',
+        'bmp',
+        'svg',
+        'ico',
+      ].includes(ext);
+    },
+    insertUploadedAsset(fileUrl, file) {
+      const { schema } = editorView.state;
+      const { from } = editorView.state.selection;
+
+      if (this.isDisplayableImage(file)) {
+        const node = schema.nodes.image.create({ src: fileUrl });
+        const paragraphNode = schema.node('paragraph');
+        const tr = editorView.state.tr
+          .replaceSelectionWith(paragraphNode)
+          .insert(from + 1, node);
+        editorView.dispatch(tr.scrollIntoView());
+      } else {
+        const linkMark = schema.mark('link', { href: fileUrl });
+        const label =
+          file?.name ||
+          this.$t('HELP_CENTER.ARTICLE_EDITOR.FILE_UPLOAD.LINK_FALLBACK');
+        const textNode = schema.text(label, [linkMark]);
+        const paragraphWithLink = schema.node('paragraph', null, [textNode]);
+        editorView.dispatch(
+          editorView.state.tr
+            .replaceSelectionWith(paragraphWithLink)
+            .scrollIntoView()
+        );
+      }
+      this.focusEditorInputField();
+    },
+    async uploadArticleAttachment(file) {
       try {
         const fileUrl = await this.$store.dispatch('articles/attachImage', {
           portalSlug: this.$route.params.portalSlug,
@@ -145,27 +188,10 @@ export default {
         });
 
         if (fileUrl) {
-          this.onImageUploadStart(fileUrl);
+          this.insertUploadedAsset(fileUrl, file);
         }
       } catch (error) {
-        useAlert(this.$t('HELP_CENTER.ARTICLE_EDITOR.IMAGE_UPLOAD.ERROR'));
-      }
-    },
-    onImageUploadStart(fileUrl) {
-      const { selection } = editorView.state;
-      const from = selection.from;
-      const node = editorView.state.schema.nodes.image.create({
-        src: fileUrl,
-      });
-      const paragraphNode = editorView.state.schema.node('paragraph');
-      if (node) {
-        // Insert the image and the caption wrapped inside a paragraph
-        const tr = editorView.state.tr
-          .replaceSelectionWith(paragraphNode)
-          .insert(from + 1, node);
-
-        editorView.dispatch(tr.scrollIntoView());
-        this.focusEditorInputField();
+        useAlert(this.$t('HELP_CENTER.ARTICLE_EDITOR.FILE_UPLOAD.ERROR'));
       }
     },
     reloadState() {
@@ -198,10 +224,16 @@ export default {
           paste: (view, event) => {
             const data = event.clipboardData.files;
             if (data.length > 0) {
-              data.forEach(file => {
-                // Check if the file is an image
-                if (file.type.includes('image')) {
-                  this.uploadImageToStorage(file);
+              Array.from(data).forEach(file => {
+                if (checkFileSizeLimit(file, MAXIMUM_FILE_UPLOAD_SIZE)) {
+                  this.uploadArticleAttachment(file);
+                } else {
+                  useAlert(
+                    this.$t(
+                      'HELP_CENTER.ARTICLE_EDITOR.FILE_UPLOAD.ERROR_FILE_SIZE',
+                      { size: MAXIMUM_FILE_UPLOAD_SIZE }
+                    )
+                  );
                 }
               });
               event.preventDefault();
@@ -291,13 +323,7 @@ export default {
 <template>
   <div>
     <div class="editor-root editor--article">
-      <input
-        ref="imageUploadInput"
-        type="file"
-        accept="image/png, image/jpeg, image/jpg, image/gif, image/webp"
-        hidden
-        @change="onFileChange"
-      />
+      <input ref="imageUploadInput" type="file" hidden @change="onFileChange" />
       <div ref="editor" />
     </div>
   </div>

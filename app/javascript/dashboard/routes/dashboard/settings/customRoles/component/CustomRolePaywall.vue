@@ -8,6 +8,7 @@ import { useI18n } from 'vue-i18n';
 
 const dummyCustomRolesData = [
   {
+    id: 'paywall-dummy-1',
     name: 'All Permissions',
     description: 'All permissions',
     permissions: [
@@ -20,6 +21,7 @@ const dummyCustomRolesData = [
     ],
   },
   {
+    id: 'paywall-dummy-2',
     name: 'Conversation Permissions',
     description: 'Conversation permissions',
     permissions: [
@@ -29,11 +31,13 @@ const dummyCustomRolesData = [
     ],
   },
   {
+    id: 'paywall-dummy-3',
     name: 'Contact Permissions',
     description: 'Contact permissions',
     permissions: ['contact_manage'],
   },
   {
+    id: 'paywall-dummy-4',
     name: 'Report Permissions',
     description: 'Report permissions',
     permissions: ['report_manage'],
@@ -75,22 +79,28 @@ const tableHeaders = computed(() => {
 <template>
   <div class="w-full min-h-[12rem] relative">
     <div class="w-full space-y-3 text-sm">
-      <thead class="opacity-30 dark:opacity-30">
-        <th
-          v-for="thHeader in tableHeaders"
-          :key="thHeader"
-          class="py-4 ltr:pr-4 rtl:pl-4 text-start text-heading-3 text-n-slate-12"
-        >
-          <span class="mb-0">
-            {{ thHeader }}
-          </span>
-        </th>
-      </thead>
-      <CustomRoleListItem
-        class="opacity-25 dark:opacity-20"
-        :roles="dummyCustomRolesData"
-        :loading="{}"
-      />
+      <table class="w-full">
+        <thead class="opacity-30 dark:opacity-30">
+          <tr>
+            <th
+              v-for="thHeader in tableHeaders"
+              :key="thHeader"
+              class="py-4 ltr:pr-4 rtl:pl-4 text-start text-heading-3 text-n-slate-12"
+            >
+              <span class="mb-0">
+                {{ thHeader }}
+              </span>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <CustomRoleListItem
+            class="opacity-25 dark:opacity-20"
+            :roles="dummyCustomRolesData"
+            :loading="{}"
+          />
+        </tbody>
+      </table>
     </div>
     <div
       class="absolute inset-0 flex flex-col items-center justify-center w-full h-full bg-gradient-to-t from-white dark:from-slate-900 to-transparent"

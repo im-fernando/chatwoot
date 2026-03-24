@@ -41,6 +41,11 @@
       "SAVED": "Saved"
     },
     "ARTICLE_EDITOR": {
+      "FILE_UPLOAD": {
+        "LINK_FALLBACK": "Attachment",
+        "ERROR": "Error while uploading file",
+        "ERROR_FILE_SIZE": "File size should be less than {size}MB"
+      },
       "IMAGE_UPLOAD": {
         "TITLE": "Upload image",
         "UPLOADING": "Uploading...",
