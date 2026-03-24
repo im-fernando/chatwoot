@@ -17,6 +17,8 @@ import ArticleSearchPopover from 'dashboard/routes/dashboard/helpcenter/componen
 import CopilotEditorSection from './CopilotEditorSection.vue';
 import MessageSignatureMissingAlert from './MessageSignatureMissingAlert.vue';
 import ReplyBoxBanner from './ReplyBoxBanner.vue';
+import ShareEvolutionContactsPicker from './ShareEvolutionContactsPicker.vue';
+import ShareEvolutionContactsChips from './ShareEvolutionContactsChips.vue';
 import QuotedEmailPreview from './QuotedEmailPreview.vue';
 import { REPLY_EDITOR_MODES } from 'dashboard/components/widgets/WootWriter/constants';
 import WootMessageEditor from 'dashboard/components/widgets/WootWriter/Editor.vue';
@@ -80,6 +82,8 @@ export default {
     QuotedEmailPreview,
     CopilotEditorSection,
     CopilotReplyBottomPanel,
+    ShareEvolutionContactsPicker,
+    ShareEvolutionContactsChips,
   },
   mixins: [inboxMixin, fileUploadMixin, keyboardEventListenerMixins],
   props: {
@@ -140,6 +144,7 @@ export default {
       showArticleSearchPopover: false,
       hasRecordedAudio: false,
       copilotAcceptedMessages: {},
+      sharedContactsToSend: [],
     };
   },
   computed: {
@@ -306,7 +311,17 @@ export default {
       };
     },
     hasAttachments() {
-      return this.attachedFiles.length;
+      return (
+        this.attachedFiles.length > 0 ||
+        (this.isEvolutionWhatsAppChannel && this.sharedContactsToSend.length > 0)
+      );
+    },
+    showShareSavedContacts() {
+      return (
+        this.isEvolutionWhatsAppChannel &&
+        !this.isPrivate &&
+        !this.isOnPrivateNote
+      );
     },
     showAudioRecorder() {
       return !this.isOnPrivateNote && this.showFileUpload;
@@ -326,6 +341,12 @@ export default {
       return conversationDisplayType !== CONDENSED;
     },
     isMessageEmpty() {
+      if (
+        this.isEvolutionWhatsAppChannel &&
+        this.sharedContactsToSend.length > 0
+      ) {
+        return false;
+      }
       if (!this.message) {
         return true;
       }
@@ -489,6 +510,16 @@ export default {
       this.setToDraft(this.conversationIdByRoute, oldReplyType);
       this.getFromDraft();
     },
+    attachedFiles(newFiles) {
+      if (newFiles.length && this.sharedContactsToSend.length) {
+        this.sharedContactsToSend = [];
+      }
+    },
+    sharedContactsToSend(newContacts) {
+      if (newContacts.length && this.attachedFiles.length) {
+        this.attachedFiles = [];
+      }
+    },
   },
 
   mounted() {
@@ -597,6 +628,7 @@ export default {
       this.resetAudioRecorderInput();
       // Reset attached files
       this.attachedFiles = [];
+      this.sharedContactsToSend = [];
     },
     saveDraft(conversationId, replyType) {
       if (this.message || this.message === '') {
@@ -933,6 +965,7 @@ export default {
       // Clear attachments when switching between private note and reply modes
       // This is to prevent from breaking the upload rules
       if (this.attachedFiles.length > 0) this.attachedFiles = [];
+      if (this.sharedContactsToSend.length > 0) this.sharedContactsToSend = [];
 
       const { can_reply: canReply } = this.currentChat;
       this.$store.dispatch('draftMessages/setReplyEditorMode', {
@@ -970,6 +1003,7 @@ export default {
         );
       }
       this.attachedFiles = [];
+      this.sharedContactsToSend = [];
       this.isRecordingAudio = false;
       this.resetReplyToMessage();
       this.resetAudioRecorderInput();
@@ -1081,6 +1115,11 @@ export default {
     removeAttachment(attachments) {
       this.attachedFiles = attachments;
     },
+    removeSharedContact(id) {
+      this.sharedContactsToSend = this.sharedContactsToSend.filter(
+        c => c.id !== id
+      );
+    },
     setReplyToInPayload(payload) {
       if (this.inReplyTo?.id) {
         return {
@@ -1152,6 +1191,14 @@ export default {
         private: this.isPrivate,
         sender: this.sender,
       };
+
+      if (this.showShareSavedContacts && this.sharedContactsToSend.length) {
+        messagePayload.contentAttributes = {
+          ...messagePayload.contentAttributes,
+          shared_contact_ids: this.sharedContactsToSend.map(c => c.id),
+        };
+      }
+
       messagePayload = this.setReplyToInPayload(messagePayload);
 
       if (this.attachedFiles && this.attachedFiles.length) {
@@ -1368,8 +1415,13 @@ export default {
           @toggle="toggleQuotedReply"
         />
 
+        <ShareEvolutionContactsChips
+          v-if="showShareSavedContacts && isDefaultEditorMode"
+          :contacts="sharedContactsToSend"
+          @remove="removeSharedContact"
+        />
         <div
-          v-if="hasAttachments && isDefaultEditorMode"
+          v-if="attachedFiles.length && isDefaultEditorMode"
           class="bg-transparent py-0 mb-2"
           @paste="onPaste"
         >
@@ -1441,7 +1493,15 @@ export default {
         @replace-text="replaceText"
         @toggle-insert-article="toggleInsertArticle"
         @toggle-quoted-reply="toggleQuotedReply"
-      />
+      >
+        <template #toolbar-left-extra>
+          <ShareEvolutionContactsPicker
+            v-if="showShareSavedContacts"
+            v-model:selected-contacts="sharedContactsToSend"
+            toolbar-only
+          />
+        </template>
+      </ReplyBottomPanel>
     </Transition>
 
     <WhatsappTemplates

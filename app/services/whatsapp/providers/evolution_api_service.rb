@@ -5,7 +5,11 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
   def send_message(phone_number, message)
     @message = message
     if message.attachments.present?
-      send_attachment_message(phone_number, message)
+      if message.attachments.all?(&:contact?)
+        send_contact_message(phone_number, message)
+      else
+        send_attachment_message(phone_number, message)
+      end
     elsif message.content_type == 'input_select'
       send_interactive_as_text(phone_number, message)
     else
@@ -229,6 +233,76 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
       body: { number: normalize_number(phone_number), text: text.to_s }.to_json
     )
     process_response(response, message)
+  end
+
+  # https://doc.evolution-api.com/v2/api-reference/message-controller/send-contact
+  def send_contact_message(phone_number, message)
+    contacts_payload = message.attachments.select(&:contact?).filter_map { |att| evolution_contact_entry(att) }
+    return handle_error_with_message(message, 'No valid contact phone for Evolution sendContact') if contacts_payload.empty?
+
+    caption = post_evolution_contact_caption(phone_number, message)
+    return nil if caption == :failed
+
+    body = {
+      number: normalize_number(phone_number),
+      contact: contacts_payload
+    }
+    response = HTTParty.post(
+      "#{api_base_path}/message/sendContact/#{escaped_instance_name}",
+      headers: api_headers,
+      body: body.to_json
+    )
+    process_response(response, message)
+  end
+
+  def evolution_contact_entry(attachment)
+    meta = (attachment.meta || {}).with_indifferent_access
+    phone_raw = attachment.fallback_title.to_s.strip
+    wuid = normalize_number(phone_raw)
+    return nil if wuid.blank?
+
+    first = meta[:first_name].presence || meta[:firstName]
+    last = meta[:last_name].presence || meta[:lastName]
+    full_name = [first, last].compact.join(' ').presence || phone_raw.presence || 'Contact'
+
+    {
+      fullName: full_name,
+      wuid: wuid,
+      phoneNumber: evolution_formatted_phone(phone_raw, wuid),
+      organization: meta[:organization].to_s,
+      email: meta[:email].to_s,
+      url: meta[:url].to_s
+    }
+  end
+
+  def evolution_formatted_phone(display, wuid)
+    s = display.to_s.strip
+    return "+#{wuid}" if s.blank?
+
+    s
+  end
+
+  # Optional user text before vCard; no agent signature (unlike post_evolution_signed_text_preamble).
+  def post_evolution_contact_caption(phone_number, message)
+    text = Whatsapp::OutgoingSignature.trim_body(message.outgoing_content).to_s.gsub(/\n+\z/, '')
+    return :skipped if text.blank?
+
+    quoted = whatsapp_reply_context(message)
+    body = { number: normalize_number(phone_number), text: text }
+    body[:quoted] = { key: { id: quoted[:message_id] }, message: { conversation: quoted[:text] } } if quoted.present?
+
+    response = HTTParty.post(
+      "#{api_base_path}/message/sendText/#{escaped_instance_name}",
+      headers: api_headers,
+      body: body.to_json
+    )
+    parsed = response.parsed_response
+    if response.success? && parsed.is_a?(Hash) && parsed['key'].present?
+      :sent
+    else
+      handle_error(response, message)
+      :failed
+    end
   end
 
   # Sends "> Name" / "> Name\n…" before audio or sticker; does not set message.source_id on success.

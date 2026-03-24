@@ -23,6 +23,8 @@ class Messages::MessageBuilder
   def perform
     @message = @conversation.messages.build(message_params)
     process_attachments
+    process_shared_contacts
+    strip_shared_contact_ids_from_content_attributes
     process_emails
     # When the message has no quoted content, it will just be rendered as a regular message
     # The frontend is equipped to handle this case
@@ -45,6 +47,63 @@ class Messages::MessageBuilder
     return content_attributes if content_attributes.is_a?(Hash)
 
     {}
+  end
+
+  def process_shared_contacts
+    ids = shared_contact_ids_param
+    return if ids.blank?
+
+    contacts_by_id = @account.contacts.where(id: ids).index_by(&:id)
+    ids.each do |id|
+      contact = contacts_by_id[id]
+      next if contact.blank? || contact.phone_number.blank?
+
+      @message.attachments.build(
+        account_id: @message.account_id,
+        file_type: :contact,
+        fallback_title: contact.phone_number,
+        meta: shared_contact_meta_for_attachment(contact)
+      )
+    end
+  end
+
+  def strip_shared_contact_ids_from_content_attributes
+    return if @message.content_attributes.blank?
+
+    @message.content_attributes.delete('shared_contact_ids')
+    @message.content_attributes.delete(:shared_contact_ids)
+  end
+
+  def shared_contact_ids_param
+    ca = content_attributes
+    raw = ca[:shared_contact_ids] || ca['shared_contact_ids'] || @params[:shared_contact_ids]
+    Array(raw).map(&:to_i).reject(&:zero?).uniq
+  end
+
+  def shared_contact_meta_for_attachment(contact)
+    first, last = shared_contact_names(contact)
+    org = contact.additional_attributes&.dig('company_name').to_s
+    link = contact.additional_attributes&.dig('link').to_s
+    {
+      'firstName' => first.presence || contact.name.to_s.strip.presence || 'Contact',
+      'lastName' => last,
+      'first_name' => first.presence || contact.name.to_s.strip.presence || 'Contact',
+      'last_name' => last,
+      email: contact.email.to_s,
+      organization: org,
+      url: link
+    }.compact
+  end
+
+  def shared_contact_names(contact)
+    fn = contact.name.to_s.strip
+    ln = contact.last_name.to_s.strip
+    if fn.present? && ln.blank?
+      parts = fn.split(/\s+/, 2)
+      fn = parts[0] || ''
+      ln = parts[1] || ''
+    end
+    [fn, ln]
   end
 
   def process_attachments

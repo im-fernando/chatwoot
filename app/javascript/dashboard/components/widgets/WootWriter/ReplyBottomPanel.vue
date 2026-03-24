@@ -324,6 +324,7 @@ export default {
           sm
         />
       </FileUpload>
+      <slot name="toolbar-left-extra" />
       <NextButton
         v-if="showAudioRecorderButton"
         v-tooltip.top-end="$t('CONVERSATION.REPLYBOX.TIP_AUDIORECORDER_ICON')"
