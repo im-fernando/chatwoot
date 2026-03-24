@@ -3,6 +3,9 @@
     "HEADER": "Caixas de Entrada",
     "DESCRIPTION": "Um canal é o modo de comunicação que seu cliente escolhe para interagir com você. Uma caixa de entrada é onde você gerencia interações para um canal específico. Pode incluir comunicações de várias fontes, como e-mail, chat ao vivo e mídia social.",
     "LEARN_MORE": "Saiba mais sobre as caixas de entrada",
+    "COUNT": "{n} caixa de entrada | {n} caixas de entrada",
+    "SEARCH_PLACEHOLDER": "Buscar caixas de entrada...",
+    "NO_RESULTS": "Nenhuma caixa de entrada encontrada para sua busca",
     "RECONNECTION_REQUIRED": "Sua caixa de entrada está desconectada. Você não receberá novas mensagens até reautorizar.",
     "CLICK_TO_RECONNECT": "Clique aqui para reconectar.",
     "WHATSAPP_REGISTRATION_INCOMPLETE": "Seu registro no WhatsApp Business não foi concluído. Verifique o status do seu nome de exibição no Meta Business Manager antes de reconectar.",
@@ -618,8 +621,10 @@
         "DISABLED": "Desativado"
       },
       "LOCK_TO_SINGLE_CONVERSATION": {
-        "ENABLED": "Ativado",
-        "DISABLED": "Desativado"
+        "ENABLED": "Reabrir a mesma conversa",
+        "DISABLED": "Criar novas conversas",
+        "ENABLED_DESCRIPTION": "Quando um contato enviar mensagem novamente, a conversa anterior será reaberta.",
+        "DISABLED_DESCRIPTION": "Uma nova conversa será criada a cada vez, após a anterior ser resolvida."
       },
       "ENABLE_HMAC": {
         "LABEL": "Ativar"
@@ -654,6 +659,8 @@
       "ACCOUNT_HEALTH": "Saúde da conta",
       "CSAT": "CSAT"
     },
+    "CHANNEL_PREFERENCES": "Preferências do canal",
+    "WIDGET_FEATURES": "Recursos do widget",
     "ACCOUNT_HEALTH": {
       "TITLE": "Gerencie sua conta do WhatsApp",
       "DESCRIPTION": "Revise o status da sua conta do WhatsApp, os limites de mensagens e a qualidade. Atualize as configurações ou resolva problemas, se necessário",
@@ -707,6 +714,16 @@
           "SANDBOX": "Sandbox",
           "LIVE": "Em tempo real"
         }
+      },
+      "WEBHOOK": {
+        "TITLE": "Configuração do webhook",
+        "DESCRIPTION": "A URL do webhook é necessária para que sua conta do WhatsApp Business receba mensagens dos clientes",
+        "ACTION_REQUIRED": "Webhook não configurado",
+        "REGISTER_BUTTON": "Registrar webhook",
+        "REGISTER_SUCCESS": "Webhook registrado com sucesso",
+        "REGISTER_ERROR": "Falha ao registrar o webhook. Tente novamente.",
+        "CONFIGURED_SUCCESS": "Webhook configurado com sucesso",
+        "URL_MISMATCH": "URL do webhook não confere"
       }
     },
     "SETTINGS": "Configurações",
@@ -765,11 +782,11 @@
       "WHATSAPP_EMBEDDED_SIGNUP_DESCRIPTION": "Você pode reconfigurar esta caixa de entrada para atualizar suas configurações do WhatsApp Business.",
       "WHATSAPP_RECONFIGURE_BUTTON": "Reconfigurar",
       "WHATSAPP_CONNECT_TITLE": "Conectar ao WhatsApp Business",
-      "WHATSAPP_CONNECT_SUBHEADER": ".",
+      "WHATSAPP_CONNECT_SUBHEADER": "Faça upgrade para o cadastro incorporado do WhatsApp para facilitar o gerenciamento.",
       "WHATSAPP_CONNECT_DESCRIPTION": "Conecte esta caixa de entrada ao WhatsApp Business para ter recursos aprimorados e um gerenciamento mais fácil.",
       "WHATSAPP_CONNECT_BUTTON": "Conectar",
       "WHATSAPP_CONNECT_SUCCESS": "Conectado com sucesso ao WhatsApp Business!",
-      "WHATSAPP_CONNECT_ERROR": "Não foi possível reconfigurar o WhatsApp Business. Tente novamente.",
+      "WHATSAPP_CONNECT_ERROR": "Não foi possível conectar ao WhatsApp Business. Tente novamente.",
       "WHATSAPP_RECONFIGURE_SUCCESS": "WhatsApp Business reconfigurado com sucesso!",
       "WHATSAPP_RECONFIGURE_ERROR": "Não foi possível reconfigurar o WhatsApp Business. Tente novamente.",
       "WHATSAPP_APP_ID_MISSING": "O ID do WhatsApp não está configurado. Por favor, contate o administrador.",
@@ -787,6 +804,7 @@
       "LABEL": "Centro de Ajuda",
       "PLACEHOLDER": "Selecionar Centro de Ajuda",
       "SELECT_PLACEHOLDER": "Selecionar Centro de Ajuda",
+      "NONE": "Nenhum",
       "REMOVE": "Remover Centro de Ajuda",
       "SUB_TEXT": "Anexe um Centro de Ajuda com a caixa de entrada"
     },
@@ -794,6 +812,53 @@
       "MAX_ASSIGNMENT_LIMIT": "Limite de atribuição automática",
       "MAX_ASSIGNMENT_LIMIT_RANGE_ERROR": "Por favor, insira um valor maior que 0",
       "MAX_ASSIGNMENT_LIMIT_SUB_TEXT": "Limitar o número máximo de conversas desta caixa de entrada que pode ser atribuído automaticamente a um agente"
+    },
+    "ASSIGNMENT": {
+      "TITLE": "Atribuição de conversas",
+      "DESCRIPTION": "Atribuir automaticamente conversas recebidas a agentes disponíveis conforme as políticas de atribuição",
+      "ENABLE_AUTO_ASSIGNMENT": "Ativar atribuição automática de conversas",
+      "DEFAULT_RULES_TITLE": "Regras padrão de atribuição",
+      "DEFAULT_RULES_DESCRIPTION": "Usando o comportamento padrão de atribuição para todas as conversas",
+      "DEFAULT_RULE_1": "Conversas criadas há mais tempo primeiro",
+      "DEFAULT_RULE_2": "Distribuição em rodízio (round robin)",
+      "CUSTOMIZE_WITH_POLICY": "Personalizar com política de atribuição",
+      "USING_POLICY": "Usando política de atribuição personalizada nesta caixa de entrada",
+      "CUSTOMIZE_POLICY": "Personalizar com política de atribuição",
+      "DELETE_POLICY": "Excluir política",
+      "POLICY_LABEL": "Política de atribuição",
+      "ASSIGNMENT_ORDER_LABEL": "Ordem de atribuição",
+      "ASSIGNMENT_METHOD_LABEL": "Método de atribuição",
+      "POLICY_STATUS": {
+        "ACTIVE": "Ativa",
+        "INACTIVE": "Inativa"
+      },
+      "PRIORITY": {
+        "EARLIEST_CREATED": "Criada há mais tempo",
+        "LONGEST_WAITING": "Em espera há mais tempo"
+      },
+      "METHOD": {
+        "ROUND_ROBIN": "Rodízio (round robin)",
+        "BALANCED": "Atribuição balanceada"
+      },
+      "UPGRADE_PROMPT": "Políticas de atribuição personalizadas estão disponíveis no plano Business",
+      "UPGRADE_TO_BUSINESS": "Fazer upgrade para Business",
+      "DEFAULT_POLICY_LINKED": "Política padrão vinculada",
+      "DEFAULT_POLICY_DESCRIPTION": "Vincule uma política de atribuição personalizada para definir como as conversas são atribuídas aos agentes nesta caixa de entrada.",
+      "LINK_EXISTING_POLICY": "Vincular política existente",
+      "CREATE_NEW_POLICY": "Criar nova política",
+      "NO_POLICIES": "Nenhuma política de atribuição encontrada",
+      "VIEW_ALL_POLICIES": "Ver todas as políticas",
+      "CURRENT_BEHAVIOR": "Comportamento de atribuição padrão em uso:",
+      "LINK_SUCCESS": "Política de atribuição vinculada com sucesso",
+      "LINK_ERROR": "Falha ao vincular a política de atribuição"
+    },
+    "ASSIGNMENT_POLICY": {
+      "DELETE_CONFIRM_TITLE": "Excluir política de atribuição?",
+      "DELETE_CONFIRM_MESSAGE": "Tem certeza de que deseja remover esta política de atribuição desta caixa de entrada? A caixa voltará às regras padrão de atribuição.",
+      "CANCEL": "Cancelar",
+      "CONFIRM_DELETE": "Excluir",
+      "DELETE_SUCCESS": "Política de atribuição removida com sucesso",
+      "DELETE_ERROR": "Falha ao remover a política de atribuição"
     },
     "FACEBOOK_REAUTHORIZE": {
       "TITLE": "Reautorizar",
@@ -830,6 +895,10 @@
     "CSAT": {
       "TITLE": "Habilitar CSAT",
       "SUBTITLE": "Iniciar automaticamente pesquisas de CSAT no final das conversas para entender como os clientes se sentem em relação à sua experiência de suporte. Acompanhe as tendências de satisfação e identifique áreas para melhoria ao longo do tempo.",
+      "TEXT_FLOW": {
+        "TITLE": "Coletar avaliação por texto (1–5)",
+        "SUBTITLE": "Para provedores de WhatsApp não oficiais (por exemplo Baileys/Evolution API), peça aos clientes que respondam com um número de 1 a 5 e, opcionalmente, colete comentários em uma mensagem seguinte."
+      },
       "DISPLAY_TYPE": {
         "LABEL": "Tipo de exibição"
       },
@@ -866,6 +935,20 @@
         "CONFIRM": "Criar novo modelo",
         "CANCEL": "Voltar atrás"
       },
+      "UTILITY_ANALYZER": {
+        "ACTION": "Verificar adequação como utilidade",
+        "HELPER_NOTE": "Analise esta mensagem antes do envio para melhorar a classificação como Utilidade. O Chatwoot cria um modelo CSAT dedicado com botões de relatório e o envia como Utilidade; a Meta ainda pode reclassificar como Marketing conforme o conteúdo.",
+        "RESULT_LABEL": "Previsão de categoria da Meta",
+        "GUIDANCE_NOTE": "Esta é uma verificação orientativa, não uma garantia de aprovação pela Meta.",
+        "SUGGESTION_LABEL": "Reformulação sugerida segura para utilidade",
+        "APPLY": "Usar esta reformulação",
+        "ERROR_MESSAGE": "Não foi possível analisar a mensagem. Tente novamente.",
+        "CLASSIFICATION": {
+          "LIKELY_UTILITY": "Provável Utilidade",
+          "LIKELY_MARKETING": "Provável Marketing",
+          "UNCLEAR": "Precisa de esclarecimento"
+        }
+      },
       "SURVEY_RULE": {
         "LABEL": "Regra de pesquisa",
         "DESCRIPTION_PREFIX": "Enviar a pesquisa se a conversa",
@@ -893,9 +976,11 @@
       "UNAVAILABLE_MESSAGE_LABEL": "Mensagem indisponível para visitantes",
       "TOGGLE_HELP": "Permitir a disponibilidade de negócios mostrará as horas disponíveis no widget de bate-papo ao vivo, mesmo que todos os agentes estejam offline. Os vistores disponíveis horários externos podem ser avisados com uma mensagem e um formulário de pré-bate-papo.",
       "DAY": {
+        "DAY": "Dia",
+        "AVAILABILITY": "Disponibilidade",
         "ENABLE": "Permitir a disponibilidade para este dia",
         "UNAVAILABLE": "Indisponível",
-        "HOURS": "horas",
+        "HOURS": "Horários",
         "VALIDATION_ERROR": "Hora inicial deve ser antes de hora de fechamento.",
         "CHOOSE": "Selecione"
       },
@@ -1002,6 +1087,7 @@
           "IN_A_DAY": "Em um dia"
         },
         "WIDGET_COLOR_LABEL": "Cor do Widget",
+        "WIDGET_BUBBLE": "Bolha",
         "WIDGET_BUBBLE_POSITION_LABEL": "Posição do Balão do Widget",
         "WIDGET_BUBBLE_TYPE_LABEL": "Tipo de Balão do Widget",
         "WIDGET_BUBBLE_LAUNCHER_TITLE": {

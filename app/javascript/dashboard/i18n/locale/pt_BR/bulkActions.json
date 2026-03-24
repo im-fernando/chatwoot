@@ -14,6 +14,10 @@
     "ASSIGN_FAILED": "Falha ao atribuir conversas. Por favor, tente novamente.",
     "RESOLVE_SUCCESFUL": "Conversas resolvidas com sucesso.",
     "RESOLVE_FAILED": "Falha ao resolver conversas. Por favor, tente novamente.",
+    "RESOLVE": {
+      "ALL_MISSING_ATTRIBUTES": "Não é possível resolver as conversas: faltam atributos obrigatórios",
+      "PARTIAL_SUCCESS": "Algumas conversas precisam de atributos obrigatórios antes de serem resolvidas e foram ignoradas"
+    },
     "ALL_CONVERSATIONS_SELECTED_ALERT": "Conversas visíveis nesta página só estão selecionadas.",
     "AGENT_LIST_LOADING": "Carregando agentes",
     "UPDATE": {

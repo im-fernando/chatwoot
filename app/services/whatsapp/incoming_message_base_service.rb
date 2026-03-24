@@ -42,8 +42,6 @@ class Whatsapp::IncomingMessageBaseService
       set_conversation
       create_messages
     end
-
-    Whatsapp::MenuTriageService.new(@conversation, @message).perform if @message&.incoming? && !outgoing_echo
   end
 
   def process_statuses
