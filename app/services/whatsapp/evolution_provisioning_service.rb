@@ -1,34 +1,34 @@
 # Provisions an Evolution API instance + webhook for unofficial WhatsApp (Baileys) inboxes.
 # Requires EVOLUTION_API_MASTER_KEY and EVOLUTION_API_BASE_URL (or optional per-request api_base_url).
 class Whatsapp::EvolutionProvisioningService
-  # Subset aligned with Evolution API EventController.events (webhook schema enum); subscribe to all on inbox create.
+  # Alinhado ao enum de webhookEvents da Evolution API (webhook.schema / OpenAPI) — nomes fora do enum falham na validação.
   WEBHOOK_EVENTS = %w[
     APPLICATION_STARTUP
-    CALL
-    CHATS_DELETE
-    CHATS_SET
-    CHATS_UPDATE
-    CHATS_UPSERT
-    CONNECTION_UPDATE
-    CONTACTS_SET
-    CONTACTS_UPDATE
-    CONTACTS_UPSERT
-    GROUP_PARTICIPANTS_UPDATE
-    GROUP_UPDATE
-    GROUPS_UPSERT
-    LABELS_ASSOCIATION
-    LABELS_EDIT
-    LOGOUT_INSTANCE
-    MESSAGES_DELETE
-    MESSAGES_SET
-    MESSAGES_UPDATE
-    MESSAGES_UPSERT
-    PRESENCE_UPDATE
     QRCODE_UPDATED
-    REMOVE_INSTANCE
+    MESSAGES_SET
+    MESSAGES_UPSERT
+    MESSAGES_EDITED
+    MESSAGES_UPDATE
+    MESSAGES_DELETE
     SEND_MESSAGE
-    TYPEBOT_CHANGE_STATUS
+    SEND_MESSAGE_UPDATE
+    CONTACTS_SET
+    CONTACTS_UPSERT
+    CONTACTS_UPDATE
+    PRESENCE_UPDATE
+    CHATS_SET
+    CHATS_UPSERT
+    CHATS_UPDATE
+    CHATS_DELETE
+    GROUPS_UPSERT
+    GROUP_UPDATE
+    GROUP_PARTICIPANTS_UPDATE
+    CONNECTION_UPDATE
+    LABELS_EDIT
+    LABELS_ASSOCIATION
+    CALL
     TYPEBOT_START
+    TYPEBOT_CHANGE_STATUS
   ].freeze
 
   class ProvisioningError < StandardError; end
