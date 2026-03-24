@@ -63,6 +63,10 @@
         },
         "ENABLE_REGEX": {
           "LABEL": "Habilitar validação do regex"
+        },
+        "BADGES": {
+          "PRE_CHAT": "Pré-chat",
+          "RESOLUTION": "Resolução"
         }
       },
       "API": {
@@ -133,6 +137,9 @@
     "BADGES": {
       "PRE_CHAT": "Pré-chat",
       "RESOLUTION": "Resolução"
-    }
+    },
+    "COUNT": "{n} atributo | {n} atributos",
+    "NO_RESULTS": "Nenhum atributo encontrado para sua busca",
+    "SEARCH_PLACEHOLDER": "Buscar atributos..."
   }
 }

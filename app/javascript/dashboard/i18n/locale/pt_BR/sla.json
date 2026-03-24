@@ -37,6 +37,10 @@
           "NRT": "NRT",
           "RT": "RT"
         }
+      },
+      "TABLE_HEADER": {
+        "BUSINESS_HOURS": "Horário comercial",
+        "SLA": "SLA"
       }
     },
     "FORM": {
@@ -103,6 +107,11 @@
       "RT": "Tempo de resolução",
       "SHOW_MORE": "{count} mais",
       "HIDE": "Ocultar {count} linhas"
-    }
+    },
+    "COUNT": "{n} SLA | {n} SLAs",
+    "SEARCH": {
+      "NO_RESULTS": "Nenhum SLA encontrado para sua busca"
+    },
+    "SEARCH_PLACEHOLDER": "Buscar SLA..."
   }
 }

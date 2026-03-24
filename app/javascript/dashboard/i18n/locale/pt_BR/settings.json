@@ -273,7 +273,8 @@
     "FILE_BUBBLE": {
       "DOWNLOAD": "Baixar",
       "UPLOADING": "Enviando...",
-      "INSTAGRAM_STORY_UNAVAILABLE": "Este story não está mais disponível."
+      "INSTAGRAM_STORY_UNAVAILABLE": "Este story não está mais disponível.",
+      "INSTAGRAM_STORY_REPLY": "Respondeu ao seu story:"
     },
     "LOCATION_BUBBLE": {
       "SEE_ON_MAP": "Ver Localização"
@@ -378,7 +379,10 @@
       "INFO_SHORT": "Marcar off-line automaticamente quando não estiver usando o aplicativo."
     },
     "DOCS": "Ler documentos",
-    "SECURITY": "Segurança"
+    "SECURITY": "Segurança",
+    "CAPTAIN_AI": "Captain",
+    "CONVERSATION_WORKFLOW": "Fluxo de conversa",
+    "TICKETS": "Tickets"
   },
   "BILLING_SETTINGS": {
     "TITLE": "Cobrança",
@@ -591,7 +595,8 @@
         "CREATE_BUTTON": "Create policy",
         "API": {
           "SUCCESS_MESSAGE": "Assignment policy created successfully",
-          "ERROR_MESSAGE": "Failed to create assignment policy"
+          "ERROR_MESSAGE": "Failed to create assignment policy",
+          "INBOX_LINKED": "A caixa de entrada foi vinculada à política"
         }
       },
       "EDIT": {
@@ -618,6 +623,12 @@
             "SUCCESS_MESSAGE": "Inbox removed from policy successfully",
             "ERROR_MESSAGE": "Failed to remove inbox from policy"
           }
+        },
+        "INBOX_LINK_PROMPT": {
+          "CANCEL_BUTTON": "Pular",
+          "DESCRIPTION": "Deseja vincular esta caixa de entrada à política de atribuição?",
+          "LINK_BUTTON": "Vincular caixa de entrada",
+          "TITLE": "Vincular caixa de entrada à política"
         }
       },
       "FORM": {
@@ -643,7 +654,9 @@
           },
           "BALANCED": {
             "LABEL": "Balanced",
-            "DESCRIPTION": "Assign conversations based on available capacity."
+            "DESCRIPTION": "Assign conversations based on available capacity.",
+            "PREMIUM_BADGE": "Premium",
+            "PREMIUM_MESSAGE": "Faça upgrade para acessar atribuição balanceada e gestão de capacidade dos agentes."
           }
         },
         "ASSIGNMENT_PRIORITY": {
@@ -729,6 +742,20 @@
             "SUCCESS_MESSAGE": "Agent removed from policy successfully",
             "ERROR_MESSAGE": "Failed to remove agent from policy"
           }
+        },
+        "INBOX_LIMIT_API": {
+          "ADD": {
+            "ERROR_MESSAGE": "Falha ao adicionar limite da caixa de entrada",
+            "SUCCESS_MESSAGE": "Limite da caixa de entrada adicionado com sucesso"
+          },
+          "DELETE": {
+            "ERROR_MESSAGE": "Falha ao excluir limite da caixa de entrada",
+            "SUCCESS_MESSAGE": "Limite da caixa de entrada excluído com sucesso"
+          },
+          "UPDATE": {
+            "ERROR_MESSAGE": "Falha ao atualizar limite da caixa de entrada",
+            "SUCCESS_MESSAGE": "Limite da caixa de entrada atualizado com sucesso"
+          }
         }
       },
       "FORM": {
@@ -791,6 +818,106 @@
       "DESCRIPTION": "Are you sure you want to delete this policy? This action cannot be undone.",
       "CONFIRM_BUTTON_LABEL": "Excluir",
       "CANCEL_BUTTON_LABEL": "Cancelar"
+    }
+  },
+  "CAPTAIN_SETTINGS": {
+    "API": {
+      "ERROR": "Não foi possível atualizar as configurações do Captain. Tente novamente.",
+      "SUCCESS": "Configurações do Captain atualizadas com sucesso"
+    },
+    "DESCRIPTION": "Configure seus modelos de IA e recursos do Captain. O Captain usa cobrança por créditos: você será cobrado em créditos por cada ação do Captain, conforme o modelo selecionado.",
+    "FEATURES": {
+      "AUDIO_TRANSCRIPTION": {
+        "DESCRIPTION": "Converter automaticamente mensagens de voz e gravações de chamadas em texto pesquisável.",
+        "TITLE": "Transcrição de áudio"
+      },
+      "DESCRIPTION": "Ativar ou desativar recursos com IA.",
+      "HELP_CENTER_SEARCH": {
+        "DESCRIPTION": "Usar IA para busca contextual nos artigos da Central de Ajuda.",
+        "TITLE": "Indexação da busca na Central de Ajuda"
+      },
+      "LABEL_SUGGESTION": {
+        "DESCRIPTION": "Sugerir automaticamente etiquetas relevantes para conversas com base no conteúdo e no contexto.",
+        "MODEL_DESCRIPTION": "Selecione o modelo de IA para analisar conversas e sugerir etiquetas adequadas",
+        "MODEL_TITLE": "Modelo de sugestão de etiquetas",
+        "TITLE": "Sugestão de etiquetas"
+      },
+      "TITLE": "Recursos"
+    },
+    "LINK_TEXT": "Saiba mais sobre créditos do Captain",
+    "LOADING": "Carregando configuração do Captain...",
+    "MODEL_CONFIG": {
+      "ASSISTANT": {
+        "DESCRIPTION": "Respostas automatizadas, resumos de conversa e sugestões inteligentes de resposta para o atendimento.",
+        "TITLE": "Assistente"
+      },
+      "COMING_SOON": "Em breve",
+      "COPILOT": {
+        "DESCRIPTION": "Sugestões em tempo real, recomendações da base de conhecimento e insights durante as conversas.",
+        "TITLE": "Copiloto"
+      },
+      "CREDITS_PER_MESSAGE": "{credits} crédito/mensagem",
+      "DESCRIPTION": "Selecione modelos de IA para cada recurso.",
+      "EDITOR": {
+        "DESCRIPTION": "Composição inteligente, correção gramatical, ajuste de tom e melhoria de texto no editor de mensagens.",
+        "TITLE": "Recursos do editor"
+      },
+      "SELECT_MODEL": "Selecionar modelo",
+      "TITLE": "Configuração de modelos"
+    },
+    "NOT_ENABLED": "O Captain não está habilitado para sua conta. Faça upgrade do plano para usar os recursos do Captain.",
+    "TITLE": "Configurações do Captain"
+  },
+  "CONVERSATION_WORKFLOW": {
+    "INDEX": {
+      "HEADER": {
+        "DESCRIPTION": "Configure regras e campos obrigatórios para resolver conversas.",
+        "TITLE": "Fluxos de conversa"
+      }
+    },
+    "REQUIRED_ATTRIBUTES": {
+      "ADD": {
+        "SEARCH_PLACEHOLDER": "Buscar atributos",
+        "TITLE": "Adicionar atributos"
+      },
+      "DESCRIPTION": "Ao resolver uma conversa, os agentes serão solicitados a preencher estes atributos se ainda não tiverem sido informados.",
+      "ENTERPRISE_PAYWALL": {
+        "ASK_ADMIN": "Entre em contato com o administrador para fazer upgrade.",
+        "AVAILABLE_ON": "O recurso de atributos obrigatórios está disponível nos planos pagos.",
+        "UPGRADE_PROMPT": "Faça upgrade para um plano pago para exigir atributos antes de resolver a conversa."
+      },
+      "MODAL": {
+        "ACTIONS": {
+          "CANCEL": "Cancelar",
+          "RESOLVE": "Resolver conversa"
+        },
+        "CHECKBOX": {
+          "NO": "Não",
+          "YES": "Sim"
+        },
+        "DESCRIPTION": "Preencha os atributos personalizados abaixo antes de resolver esta conversa",
+        "PLACEHOLDERS": {
+          "DATE": "Escolha uma data",
+          "LINK": "Adicionar um link",
+          "LIST": "Selecione uma opção",
+          "NUMBER": "Digite um número",
+          "TEXT": "Escreva uma nota..."
+        },
+        "TITLE": "Resolver conversa"
+      },
+      "NO_ATTRIBUTES": "Nenhum atributo adicionado ainda",
+      "PAYWALL": {
+        "AVAILABLE_ON": "O recurso de atributos obrigatórios está disponível nos planos Business e Enterprise.",
+        "CANCEL_ANYTIME": "Você pode alterar ou cancelar seu plano a qualquer momento",
+        "TITLE": "Faça upgrade para usar atributos obrigatórios",
+        "UPGRADE_NOW": "Fazer upgrade agora",
+        "UPGRADE_PROMPT": "Faça upgrade do plano para solicitar atributos obrigatórios aos agentes antes de resolver a conversa."
+      },
+      "SAVE": {
+        "ERROR": "Não foi possível atualizar os atributos obrigatórios. Tente novamente",
+        "SUCCESS": "Atributos obrigatórios atualizados"
+      },
+      "TITLE": "Atributos obrigatórios na resolução"
     }
   }
 }

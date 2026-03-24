@@ -124,7 +124,8 @@
     "PAGINATION": {
       "RESULTS": "Exibindo {start} — {end} de {total} resultados",
       "PER_PAGE_TEMPLATE": "{size} / page"
-    }
+    },
+    "DOWNLOAD_CONVERSATION_REPORTS": "Baixar relatórios de conversas"
   },
   "AGENT_REPORTS": {
     "HEADER": "Visão Geral de Agentes",
@@ -192,6 +193,11 @@
     "CUSTOM_DATE_RANGE": {
       "CONFIRM": "Aplicar",
       "PLACEHOLDER": "Selecionar intervalo de datas"
+    },
+    "FILTERS": {
+      "INPUT_PLACEHOLDER": {
+        "AGENTS": "Buscar agentes"
+      }
     }
   },
   "LABEL_REPORTS": {
@@ -260,6 +266,11 @@
     "CUSTOM_DATE_RANGE": {
       "CONFIRM": "Aplicar",
       "PLACEHOLDER": "Selecionar intervalo de datas"
+    },
+    "FILTERS": {
+      "INPUT_PLACEHOLDER": {
+        "LABELS": "Buscar etiquetas"
+      }
     }
   },
   "INBOX_REPORTS": {
@@ -330,6 +341,11 @@
     "CUSTOM_DATE_RANGE": {
       "CONFIRM": "Aplicar",
       "PLACEHOLDER": "Selecionar intervalo de datas"
+    },
+    "FILTERS": {
+      "INPUT_PLACEHOLDER": {
+        "INBOXES": "Buscar caixas de entrada"
+      }
     }
   },
   "TEAM_REPORTS": {
@@ -398,6 +414,14 @@
     "CUSTOM_DATE_RANGE": {
       "CONFIRM": "Aplicar",
       "PLACEHOLDER": "Selecionar intervalo de datas"
+    },
+    "FILTERS": {
+      "ADD_FILTER": "Adicionar filtro",
+      "CLEAR_ALL": "Limpar tudo",
+      "INPUT_PLACEHOLDER": {
+        "TEAMS": "Buscar times"
+      },
+      "NO_FILTER": "Nenhum filtro disponível"
     }
   },
   "CSAT_REPORTS": {
@@ -407,7 +431,26 @@
     "DOWNLOAD_FAILED": "Falha ao baixar Relatórios CSAT",
     "FILTERS": {
       "AGENTS": {
-        "PLACEHOLDER": "Escolher agentes"
+        "PLACEHOLDER": "Escolher agentes",
+        "LABEL": "Agente"
+      },
+      "ADD_FILTER": "Adicionar filtro",
+      "CLEAR_ALL": "Limpar tudo",
+      "INBOXES": {
+        "LABEL": "Caixa de entrada"
+      },
+      "INPUT_PLACEHOLDER": {
+        "AGENTS": "Buscar agentes",
+        "INBOXES": "Buscar caixas de entrada",
+        "RATINGS": "Buscar avaliações",
+        "TEAMS": "Buscar times"
+      },
+      "NO_FILTER": "Nenhum filtro disponível",
+      "RATINGS": {
+        "LABEL": "Avaliação"
+      },
+      "TEAMS": {
+        "LABEL": "Time"
       }
     },
     "TABLE": {
@@ -415,8 +458,13 @@
         "CONTACT_NAME": "Contato",
         "AGENT_NAME": "Agente atribuído",
         "RATING": "Classificação",
-        "FEEDBACK_TEXT": "Comentário do feedback"
-      }
+        "FEEDBACK_TEXT": "Comentário do feedback",
+        "CONVERSATION": "Conversa",
+        "CUSTOMER": "Cliente",
+        "HANDLED_BY": "Atendido por",
+        "RESPONSE": "Resposta"
+      },
+      "UNKNOWN_CUSTOMER": "Cliente desconhecido"
     },
     "METRIC": {
       "TOTAL_RESPONSES": {
@@ -430,7 +478,29 @@
       "RESPONSE_RATE": {
         "LABEL": "Taxa de resposta",
         "TOOLTIP": "Número total de respostas / Número total de mensagens CSAT de pesquisa enviadas * 100"
-      }
+      },
+      "RATING_DISTRIBUTION": "Distribuição das avaliações"
+    },
+    "NO_AGENT": "Nenhum agente atribuído",
+    "NO_FEEDBACK": "Nenhum comentário informado",
+    "NO_RECORDS_DESCRIPTION": "As respostas à pesquisa CSAT aparecerão aqui quando os clientes começarem a enviar feedback.",
+    "REVIEW_NOTES": {
+      "CANCEL": "Cancelar",
+      "PAYWALL": {
+        "AVAILABLE_ON": "As notas de revisão estão disponíveis apenas nos planos Business e Enterprise.",
+        "CANCEL_ANYTIME": "Você pode alterar ou cancelar seu plano a qualquer momento",
+        "TITLE": "Faça upgrade para adicionar notas de revisão",
+        "UPGRADE_NOW": "Fazer upgrade agora",
+        "UPGRADE_PROMPT": "Adicione contexto interno a cada resposta CSAT com notas de revisão. Registre o que realmente aconteceu, identifique padrões e tome melhores decisões com base no feedback."
+      },
+      "PLACEHOLDER": "Adicione notas de revisão sobre esta avaliação...",
+      "SAVE": "Salvar",
+      "SAVED": "Notas salvas com sucesso",
+      "SAVE_ERROR": "Falha ao salvar as notas",
+      "SAVING": "Salvando...",
+      "TITLE": "Notas de revisão",
+      "UPDATED_BY": "Atualizado por {name} {time}",
+      "UPDATED_BY_LABEL": "Atualizado por"
     }
   },
   "BOT_REPORTS": {

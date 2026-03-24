@@ -1,0 +1,31 @@
+{
+  "TICKETS": {
+    "PAGE_TITLE": "Tickets",
+    "NEW": "Novo ticket",
+    "CREATE": "Criar ticket",
+    "TITLE": "Título",
+    "DESCRIPTION": "Descrição",
+    "STATUS": "Status",
+    "STATUS_OPEN": "Aberto",
+    "STATUS_PENDING": "Pendente",
+    "STATUS_RESOLVED": "Resolvido",
+    "ALL": "Todos",
+    "EMPTY": "Ainda não há tickets",
+    "EMPTY_HINT": "Crie um ticket para agrupar conversas e acompanhar atualizações.",
+    "LINKED_CONVERSATIONS": "Conversas vinculadas",
+    "ADD_CONVERSATION": "Vincular conversa",
+    "CONVERSATION_DISPLAY_ID": "Conversa nº",
+    "UPDATES": "Atualizações",
+    "NEW_UPDATE": "Adicionar atualização",
+    "POST_UPDATE": "Publicar",
+    "BACK_TO_LIST": "Voltar aos tickets",
+    "SAVED": "Ticket salvo",
+    "LINKED": "Conversa vinculada",
+    "UNLINKED": "Conversa desvinculada",
+    "UPDATE_POSTED": "Atualização publicada",
+    "OPEN_CONVERSATION": "Abrir conversa",
+    "UNLINK": "Desvincular",
+    "FILTER_STATUS": "Filtrar por status",
+    "ERROR_GENERIC": "Algo deu errado"
+  }
+}

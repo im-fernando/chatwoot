@@ -29,7 +29,8 @@
         "NAME": "Nome",
         "CREATED BY": "Criada por",
         "LAST_UPDATED_BY": "Ultima atualização por",
-        "VISIBILITY": "Visibilidade"
+        "VISIBILITY": "Visibilidade",
+        "ACTIONS": "Ações"
       },
       "404": "Nenhuma macro encontrada"
     },
@@ -106,6 +107,9 @@
       "MEDIUM": "Média",
       "HIGH": "Alta",
       "URGENT": "Urgente"
-    }
+    },
+    "COUNT": "{n} macro | {n} macros",
+    "NO_RESULTS": "Nenhuma macro encontrada para sua busca",
+    "SEARCH_PLACEHOLDER": "Buscar macros..."
   }
 }

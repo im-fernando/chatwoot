@@ -72,6 +72,9 @@
         "YES": "Sim, excluir ",
         "NO": "Não, manter "
       }
-    }
+    },
+    "COUNT": "{n} resposta pronta | {n} respostas prontas",
+    "NO_RESULTS": "Nenhuma resposta pronta encontrada para sua busca",
+    "SEARCH_PLACEHOLDER": "Buscar respostas prontas..."
   }
 }

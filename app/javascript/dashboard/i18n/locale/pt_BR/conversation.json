@@ -101,7 +101,8 @@
         "RT": "RT {status}",
         "MISSED": "perdidas",
         "DUE": "venceu"
-      }
+      },
+      "TICKET_NUMBER": "Número do ticket da conversa"
     },
     "RESOLVE_DROPDOWN": {
       "MARK_PENDING": "Deixar pendente",
@@ -176,6 +177,10 @@
         "TEAM_ASSIGNMENT": {
           "SUCCESFUL": "Time {team} atribuído para o id de conversa {conversationId}",
           "FAILED": "Não foi possível atribuir time. Por favor, tente novamente."
+        },
+        "LABEL_REMOVAL": {
+          "FAILED": "Não foi possível remover a etiqueta. Tente novamente.",
+          "SUCCESFUL": "Etiqueta #{labelName} removida da conversa {conversationId}"
         }
       }
     },
@@ -187,7 +192,11 @@
       "PRIVATE_MSG_INPUT": "A mensagem será visível apenas para agentes",
       "MESSAGE_SIGNATURE_NOT_CONFIGURED": "A assinatura da mensagem não está configurada. Por favor, configure-a nas configurações do perfil.",
       "CLICK_HERE": "Clique aqui para atualizar",
-      "WHATSAPP_TEMPLATES": "Templates do Whatsapp"
+      "WHATSAPP_TEMPLATES": "Templates do Whatsapp",
+      "COPILOT_MSG_INPUT": "Envie instruções adicionais ao copilot ou pergunte o que quiser... Pressione Enter para enviar o follow-up",
+      "MESSAGING_RESTRICTED": "Você não pode responder a esta conversa",
+      "MESSAGING_RESTRICTED_API": "Você só pode responder com mensagem de modelo devido à restrição da janela de mensagens",
+      "MESSAGING_RESTRICTED_WHATSAPP": "Você só pode responder com mensagem de modelo devido à janela de 24 horas do WhatsApp"
     },
     "REPLYBOX": {
       "REPLY": "Responder",
@@ -234,7 +243,8 @@
         "REMOVE_PREVIEW": "Remover o encadeamento de e-mails citado",
         "COLLAPSE": "Recolher a prévia",
         "EXPAND": "Expandir a prévia"
-      }
+      },
+      "COPILOT_THINKING": "O Copilot está pensando"
     },
     "VISIBLE_TO_AGENTS": "Mensagem Privada: Apenas visível para você e seu time",
     "CHANGE_STATUS": "Estado da conversa mudou",
@@ -285,7 +295,24 @@
       "REJECT_CALL": "Recusar",
       "JOIN_CALL": "Entrar na chamada",
       "END_CALL": "Encerrar chamada"
-    }
+    },
+    "FILE_TYPE_NOT_SUPPORTED": "O tipo de arquivo {fileName} não é suportado nesta conversa",
+    "NATIVE_APP": "App nativo",
+    "NATIVE_APP_ADVISORY": "Esta mensagem foi enviada pelo app nativo. Responda pelo Chatwoot para manter a janela de mensagens.",
+    "TICKETS": {
+      "CREATE_FROM_CONVERSATION": "Criar ticket a partir da conversa",
+      "CREATE_SUCCESS": "Ticket criado",
+      "CREATE_TITLE": "Criar ticket",
+      "LINK_SUCCESS": "Conversa vinculada ao ticket",
+      "LINK_TITLE": "Vincular a ticket",
+      "LINK_TO_TICKET": "Vincular a ticket existente",
+      "SUBMIT_CREATE": "Criar",
+      "SUBMIT_LINK": "Vincular",
+      "TICKET_DESCRIPTION": "Descrição",
+      "TICKET_NUMBER_PLACEHOLDER": "Ticket nº",
+      "TICKET_TITLE": "Título do ticket"
+    },
+    "UNSUPPORTED_MESSAGE_TIKTOK": "Esta mensagem não é suportada. Você pode vê-la no app do TikTok."
   },
   "EMAIL_TRANSCRIPT": {
     "TITLE": "Enviar transcrição de conversa",
@@ -302,7 +329,8 @@
         "PLACEHOLDER": "Digite um endereço de e-mail",
         "ERROR": "Por favor, insira um endereço de e-mail válido"
       }
-    }
+    },
+    "SEND_EMAIL_PAYMENT_REQUIRED": "O envio da transcrição por e-mail não está disponível no seu plano atual. Faça upgrade para usar este recurso."
   },
   "ONBOARDING": {
     "TITLE": "Olá, 👋. Bem-vindo ao {installationName}!",

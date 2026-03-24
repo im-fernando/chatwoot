@@ -86,6 +86,9 @@
         "YES": "Sim, excluir ",
         "NO": "Não, manter "
       }
-    }
+    },
+    "COUNT": "{n} função personalizada | {n} funções personalizadas",
+    "NO_RESULTS": "Nenhuma função personalizada encontrada para sua busca",
+    "SEARCH_PLACEHOLDER": "Buscar funções personalizadas..."
   }
 }

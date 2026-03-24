@@ -34,7 +34,8 @@
       "LOADING": "Buscando robôs...",
       "TABLE_HEADER": {
         "DETAILS": "Detalhe do Robô",
-        "URL": "URL do Webhook"
+        "URL": "URL do Webhook",
+        "ACTIONS": "Ações"
       }
     },
     "DELETE": {
@@ -98,6 +99,9 @@
     },
     "TYPES": {
       "WEBHOOK": "Webhook robô"
-    }
+    },
+    "COUNT": "{n} bot | {n} bots",
+    "NO_RESULTS": "Nenhum bot encontrado para sua busca",
+    "SEARCH_PLACEHOLDER": "Buscar bots..."
   }
 }

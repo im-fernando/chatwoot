@@ -465,6 +465,9 @@
           },
           "TWITTER": {
             "PLACEHOLDER": "Adicionar Twitter"
+          },
+          "TELEGRAM": {
+            "PLACEHOLDER": "Adicionar Telegram"
           }
         }
       },
@@ -573,7 +576,8 @@
       "SEARCH_EMPTY_STATE_TITLE": "Nenhum contato corresponde à sua pesquisa 🔍",
       "LIST_EMPTY_STATE_TITLE": "Não há contatos disponíveis nesta visualização 📋",
       "ACTIVE_EMPTY_STATE_TITLE": "Nenhum contato está ativo no momento 🌙"
-    }
+    },
+    "LOAD_MORE": "Carregar mais"
   },
   "CONTACTS_BULK_ACTIONS": {
     "ASSIGN_LABELS": "Atribuir rótulo",
@@ -648,7 +652,8 @@
       },
       "ACTION_BUTTONS": {
         "DISCARD": "Descartar",
-        "SEND": "Enviar ({keyCode})"
+        "SEND": "Enviar ({keyCode})",
+        "OPEN_CONVERSATION": "Abrir conversa"
       }
     }
   }
