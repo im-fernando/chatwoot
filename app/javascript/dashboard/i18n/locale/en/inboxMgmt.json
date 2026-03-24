@@ -11,7 +11,8 @@
     "WHATSAPP_REGISTRATION_INCOMPLETE": "Your WhatsApp Business registration isn’t complete. Please check your display name status in Meta Business Manager before reconnecting.",
     "COMPLETE_REGISTRATION": "Complete Registration",
     "LIST": {
-      "404": "There are no inboxes attached to this account."
+      "404": "There are no inboxes attached to this account.",
+      "EVOLUTION_QR_SHORTCUT": "Connect with QR code (Evolution API)"
     },
     "CREATE_FLOW": {
       "CHANNEL": {

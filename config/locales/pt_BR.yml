@@ -37,6 +37,10 @@ pt_BR:
   errors:
     validations:
       presence: não pode ficar em branco
+    evolution:
+      master_key_missing: EVOLUTION_API_MASTER_KEY não está configurada nesta instalação
+      provision_failed: Não foi possível obter as credenciais da instância da Evolution API na resposta do servidor
+      dns_unreachable_hint: Se o Chatwoot roda em Docker, certifique-se de que o contêiner resolve e alcança este host (DNS do Docker, extra_hosts ou use uma URL base interna).
     webhook:
       invalid: Eventos inválidos
     signup:

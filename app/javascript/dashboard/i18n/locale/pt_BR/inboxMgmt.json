@@ -8,7 +8,8 @@
     "WHATSAPP_REGISTRATION_INCOMPLETE": "Seu registro no WhatsApp Business não foi concluído. Verifique o status do seu nome de exibição no Meta Business Manager antes de reconectar.",
     "COMPLETE_REGISTRATION": "Concluir registro",
     "LIST": {
-      "404": "Não há caixas de entrada anexadas a esta conta."
+      "404": "Não há caixas de entrada anexadas a esta conta.",
+      "EVOLUTION_QR_SHORTCUT": "Conectar com código QR (Evolution API)"
     },
     "CREATE_FLOW": {
       "CHANNEL": {
@@ -236,7 +237,9 @@
           "WHATSAPP_CLOUD": "Cloud do WhatsApp",
           "WHATSAPP_CLOUD_DESC": "Configuração rápida via Meta",
           "TWILIO_DESC": "Conectar através de credenciais Twilio",
-          "360_DIALOG": "360Dialog"
+          "360_DIALOG": "360Dialog",
+          "EVOLUTION_API": "API não oficial",
+          "EVOLUTION_API_DESC": "Conectar via código QR"
         },
         "SELECT_PROVIDER": {
           "TITLE": "Selecione seu provedor de API",
@@ -310,6 +313,32 @@
         },
         "API": {
           "ERROR_MESSAGE": "Não foi possível salvar o canal do WhatsApp"
+        },
+        "EVOLUTION_API": {
+          "AUTO_CONNECT_TOGGLE": "Criar instância e webhook na Evolution automaticamente (requer EVOLUTION_API_MASTER_KEY no servidor).",
+          "PHONE_OPTIONAL_AUTO": "Opcional no modo automático — usado como telefone do canal se informado; caso contrário, um número temporário é atribuído até o WhatsApp conectar.",
+          "CONTINUE_TO_QR": "Continuar",
+          "CONTINUE_TO_AGENTS": "Continuar para adicionar agentes",
+          "INSTANCE_NAME_LABEL": "Nome da instância",
+          "INSTANCE_NAME_PLACEHOLDER": "Nome da sua instância na Evolution API",
+          "INSTANCE_NAME_ERROR": "O nome da instância é obrigatório",
+          "API_BASE_URL_LABEL": "URL base da API (opcional)",
+          "API_BASE_URL_PLACEHOLDER": "https://sua-evolution-api.com",
+          "WEBHOOK_TITLE": "URL do webhook",
+          "WEBHOOK_DESCRIPTION": "Configure esta URL na instância da Evolution API. Ative pelo menos o evento MESSAGES_UPSERT.",
+          "QR_TITLE": "Escaneie o código QR",
+          "QR_INSTRUCTION": "Abra o WhatsApp no celular, vá em Aparelhos conectados e escaneie este código. Quando a conexão estiver ativa, você pode continuar.",
+          "QR_LOADING": "Carregando código QR…",
+          "QR_FETCH_ERROR": "Não foi possível carregar o código QR. Verifique a Evolution API e tente novamente.",
+          "QR_EMPTY": "A Evolution API não retornou dados de QR. Tente atualizar ou verifique os logs do servidor.",
+          "QR_GENERATION_ERROR": "Não foi possível gerar a imagem do QR a partir da resposta.",
+          "QR_REFRESH": "Atualizar código QR",
+          "QR_CONNECTED": "WhatsApp conectado.",
+          "PAIRING_CODE": "Código de pareamento:",
+          "QR_POLL_HINT": "Esta página verifica a conexão a cada poucos segundos. Você pode atualizar o QR se ele expirou.",
+          "DISCONNECTED_BANNER": "O WhatsApp está desconectado da Evolution API. Escaneie o código QR novamente para restaurar a conexão.",
+          "CONNECT_WITH_QR": "Conectar com código QR",
+          "BACK_TO_INBOX_SETTINGS": "Voltar às configurações da caixa de entrada"
         }
       },
       "VOICE": {

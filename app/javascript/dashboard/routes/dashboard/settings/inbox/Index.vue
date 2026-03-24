@@ -15,6 +15,7 @@ import {
 import ChannelName from './components/ChannelName.vue';
 import ChannelIcon from 'next/icon/ChannelIcon.vue';
 import Button from 'dashboard/components-next/button/Button.vue';
+import { INBOX_TYPES } from 'dashboard/helper/inbox';
 
 const getters = useStoreGetters();
 const store = useStore();
@@ -26,6 +27,7 @@ const selectedInbox = ref({});
 const searchQuery = ref('');
 
 const inboxes = useMapGetter('inboxes/getInboxes');
+const currentAccountId = useMapGetter('getCurrentAccountId');
 
 const inboxesList = computed(() => {
   return inboxes.value?.slice().sort((a, b) => a.name.localeCompare(b.name));
@@ -78,6 +80,13 @@ const openDelete = inbox => {
   showDeletePopup.value = true;
   selectedInbox.value = inbox;
 };
+
+function isEvolutionWhatsappInbox(inbox) {
+  return (
+    inbox.channel_type === INBOX_TYPES.WHATSAPP &&
+    inbox.provider === 'evolution_api'
+  );
+}
 </script>
 
 <template>
@@ -150,6 +159,23 @@ const openDelete = inbox => {
             </div>
           </div>
           <div class="flex gap-3 justify-end">
+            <router-link
+              v-if="isAdmin && isEvolutionWhatsappInbox(inbox)"
+              :to="{
+                name: 'settings_inbox_evolution_qr',
+                params: {
+                  accountId: currentAccountId,
+                  inboxId: inbox.id,
+                },
+              }"
+            >
+              <Button
+                v-tooltip.top="$t('INBOX_MGMT.LIST.EVOLUTION_QR_SHORTCUT')"
+                icon="i-lucide-qr-code"
+                slate
+                sm
+              />
+            </router-link>
             <router-link
               :to="{
                 name: 'settings_inbox_show',
