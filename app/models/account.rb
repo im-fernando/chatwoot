@@ -86,6 +86,10 @@ class Account < ApplicationRecord
                  schema: SETTINGS_PARAMS_SCHEMA,
                  attribute_resolver: ->(record) { record.settings }
 
+  # Register :json so ActiveRecord::Store resolves a type with #accessor (jsonb + store_accessor;
+  # avoids NoMethodError from type_for_attribute per rails/rails#51699).
+  attribute :settings, :json, default: -> { {} }
+
   store_accessor :settings, :auto_resolve_after, :auto_resolve_message, :auto_resolve_ignore_waiting
 
   store_accessor :settings, :audio_transcriptions, :auto_resolve_label
