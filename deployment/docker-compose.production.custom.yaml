@@ -19,7 +19,7 @@ services:
     command: ['bundle', 'exec', 'rails', 's', '-p', '3000', '-b', '0.0.0.0']
     restart: always
     healthcheck:
-      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/auth/sign_in || exit 1']
+      test: ['CMD-SHELL', 'ruby -rsocket -e "TCPSocket.new(%q(127.0.0.1), 3000).close"']
       interval: 10s
       timeout: 5s
       retries: 30
@@ -47,7 +47,7 @@ services:
     command: ['bundle', 'exec', 'rails', 's', '-p', '3000', '-b', '0.0.0.0']
     restart: always
     healthcheck:
-      test: ['CMD-SHELL', 'wget -qO- http://localhost:3000/auth/sign_in || exit 1']
+      test: ['CMD-SHELL', 'ruby -rsocket -e "TCPSocket.new(%q(127.0.0.1), 3000).close"']
       interval: 10s
       timeout: 5s
       retries: 30
