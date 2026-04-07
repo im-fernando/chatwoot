@@ -155,35 +155,36 @@ const previewArticle = () => {
     }
   }
 
+  // Help Center article editor: keep toolbar always visible and sticky at the top
   .ProseMirror-menubar {
-    display: none; // Hide by default
+    @apply sticky top-0 z-50 flex items-center gap-4 h-10 rounded-lg px-3 bg-n-background shadow-sm outline outline-1 outline-n-weak;
+
+    .ProseMirror-menuitem {
+      @apply mr-0;
+
+      .ProseMirror-icon {
+        @apply p-0 mt-0 !mr-0;
+
+        svg {
+          width: 20px !important;
+          height: 20px !important;
+        }
+      }
+    }
+
+    .ProseMirror-menu-active {
+      @apply bg-n-slate-3;
+    }
   }
 
-  .editor-root .has-selection {
+  // When user selects text, float the toolbar near selection (classic behavior)
+  .editor-root.has-selection {
     .ProseMirror-menubar {
-      @apply h-8 rounded-lg !px-2 z-50 bg-n-solid-3 items-center gap-4 ml-0 mb-0 shadow-md outline outline-1 outline-n-weak;
-      display: flex;
+      @apply z-50 shadow-md;
+      position: absolute !important;
       top: var(--selection-top, auto) !important;
       left: var(--selection-left, 0) !important;
       width: fit-content !important;
-      position: absolute !important;
-
-      .ProseMirror-menuitem {
-        @apply mr-0;
-
-        .ProseMirror-icon {
-          @apply p-0 mt-0 !mr-0;
-
-          svg {
-            width: 20px !important;
-            height: 20px !important;
-          }
-        }
-      }
-
-      .ProseMirror-menu-active {
-        @apply bg-n-slate-3;
-      }
     }
   }
 }

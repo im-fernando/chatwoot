@@ -42,12 +42,13 @@
     },
     "ARTICLE_EDITOR": {
       "FILE_UPLOAD": {
+        "DOWNLOAD_PREFIX": "Download:",
         "LINK_FALLBACK": "Attachment",
         "ERROR": "Error while uploading file",
         "ERROR_FILE_SIZE": "File size should be less than {size}MB"
       },
       "IMAGE_UPLOAD": {
-        "TITLE": "Upload image",
+        "TITLE": "Upload file",
         "UPLOADING": "Uploading...",
         "SUCCESS": "Image uploaded successfully",
         "ERROR": "Error while uploading image",

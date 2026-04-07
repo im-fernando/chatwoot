@@ -14,7 +14,7 @@ import { useAlert } from 'dashboard/composables';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import keyboardEventListenerMixins from 'shared/mixins/keyboardEventListenerMixins';
 
-const MAXIMUM_FILE_UPLOAD_SIZE = 4; // in MB
+const MAXIMUM_FILE_UPLOAD_SIZE = 150; // in MB
 const createState = (
   content,
   placeholder,
@@ -170,8 +170,15 @@ export default {
         const label =
           file?.name ||
           this.$t('HELP_CENTER.ARTICLE_EDITOR.FILE_UPLOAD.LINK_FALLBACK');
-        const textNode = schema.text(label, [linkMark]);
-        const paragraphWithLink = schema.node('paragraph', null, [textNode]);
+        const prefix = `${this.$t(
+          'HELP_CENTER.ARTICLE_EDITOR.FILE_UPLOAD.DOWNLOAD_PREFIX'
+        )} `;
+        const prefixNode = schema.text(prefix);
+        const linkNode = schema.text(label, [linkMark]);
+        const paragraphWithLink = schema.node('paragraph', null, [
+          prefixNode,
+          linkNode,
+        ]);
         editorView.dispatch(
           editorView.state.tr
             .replaceSelectionWith(paragraphWithLink)
