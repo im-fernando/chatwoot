@@ -1,0 +1,46 @@
+<% content_for(:title) do %>
+  Account Usage
+<% end %>
+
+<header class="main-content__header" role="banner">
+  <h1 class="main-content__page-title" id="page-title">
+    <%= content_for(:title) %>
+  </h1>
+</header>
+
+<section class="main-content__body">
+  <table class="w-full text-sm text-left border-collapse">
+    <thead>
+      <tr class="border-b border-slate-200">
+        <th class="py-3 px-4 font-semibold text-slate-700">ID</th>
+        <th class="py-3 px-4 font-semibold text-slate-700">Name</th>
+        <th class="py-3 px-4 font-semibold text-slate-700 text-right">Agents</th>
+        <th class="py-3 px-4 font-semibold text-slate-700 text-right">Inboxes</th>
+        <th class="py-3 px-4 font-semibold text-slate-700 text-right">Contacts</th>
+        <th class="py-3 px-4 font-semibold text-slate-700 text-right">Conversations</th>
+        <th class="py-3 px-4 font-semibold text-slate-700 text-right">Storage</th>
+        <th class="py-3 px-4 font-semibold text-slate-700"></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @accounts.each do |account| %>
+        <tr class="border-b border-slate-100 hover:bg-slate-50">
+          <td class="py-3 px-4 text-slate-600"><%= account.id %></td>
+          <td class="py-3 px-4 font-medium text-slate-900"><%= account.name %></td>
+          <td class="py-3 px-4 text-right tabular-nums"><%= number_with_delimiter(@usage_data[:agents][account.id] || 0) %></td>
+          <td class="py-3 px-4 text-right tabular-nums"><%= number_with_delimiter(@usage_data[:inboxes][account.id] || 0) %></td>
+          <td class="py-3 px-4 text-right tabular-nums"><%= number_with_delimiter(@usage_data[:contacts][account.id] || 0) %></td>
+          <td class="py-3 px-4 text-right tabular-nums"><%= number_with_delimiter(@usage_data[:conversations][account.id] || 0) %></td>
+          <td class="py-3 px-4 text-right tabular-nums"><%= number_to_human_size(@usage_data[:storage][account.id] || 0) %></td>
+          <td class="py-3 px-4 text-right">
+            <%= link_to 'Details', super_admin_account_usage_path(account), class: 'text-blue-600 hover:text-blue-800 font-medium' %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <div class="mt-6">
+    <%= paginate @accounts %>
+  </div>
+</section>

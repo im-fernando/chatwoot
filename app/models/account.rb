@@ -202,6 +202,29 @@ class Account < ApplicationRecord
     ISO_639.find(account_locale)&.english_name&.downcase || 'english'
   end
 
+  def resource_usage
+    {
+      agents: { current: agents.count, limit: usage_limits[:agents] },
+      inboxes: { current: inboxes.count, limit: usage_limits[:inboxes] },
+      contacts: { current: contacts.count },
+      conversations: { current: conversations.count },
+      messages: { current: messages.count },
+      storage_bytes: { current: total_storage_bytes },
+      teams: { current: teams.count },
+      labels: { current: labels.count },
+      campaigns: { current: campaigns.count },
+      automation_rules: { current: automation_rules.count },
+      canned_responses: { current: canned_responses.count },
+      webhooks: { current: webhooks.count }
+    }
+  end
+
+  def total_storage_bytes
+    Attachment.where(account_id: id)
+              .joins(file_attachment: :blob)
+              .sum('active_storage_blobs.byte_size')
+  end
+
   private
 
   def notify_creation

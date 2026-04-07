@@ -52,6 +52,7 @@ Rails.application.routes.draw do
             resource :contact_merge, only: [:create]
           end
           resource :bulk_actions, only: [:create]
+          resource :usage, only: [:show]
           resources :agents, only: [:index, :create, :update, :destroy] do
             post :bulk_create, on: :collection
           end
@@ -650,6 +651,8 @@ Rails.application.routes.draw do
       resource :settings, only: [:show] do
         get :refresh, on: :collection
       end
+
+      resources :account_usages, only: [:index, :show]
 
       # resources that doesn't appear in primary navigation in super admin
       resources :account_users, only: [:new, :create, :show, :destroy]

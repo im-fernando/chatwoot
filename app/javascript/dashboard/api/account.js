@@ -16,6 +16,10 @@ class AccountAPI extends ApiClient {
     );
     return response.data.cache_keys;
   }
+
+  getUsage() {
+    return axios.get(`/api/v1/accounts/${this.accountIdFromRoute}/usage`);
+  }
 }
 
 export default new AccountAPI();

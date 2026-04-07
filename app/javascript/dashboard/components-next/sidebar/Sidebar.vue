@@ -713,6 +713,12 @@ const menuItems = computed(() => {
           to: accountScopedRoute('security_settings_index'),
         },
         {
+          name: 'Settings Usage',
+          label: t('SIDEBAR.USAGE'),
+          icon: 'i-lucide-bar-chart-3',
+          to: accountScopedRoute('usage_settings_index'),
+        },
+        {
           name: 'Settings Billing',
           label: t('SIDEBAR.BILLING'),
           icon: 'i-lucide-credit-card',

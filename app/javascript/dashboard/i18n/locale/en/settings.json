@@ -337,6 +337,7 @@
     "MACROS": "Macros",
     "TEAMS": "Teams",
     "BILLING": "Billing",
+    "USAGE": "Usage",
     "CUSTOM_VIEWS_FOLDER": "Folders",
     "CUSTOM_VIEWS_SEGMENTS": "Segments",
     "ALL_CONTACTS": "All Contacts",
@@ -431,6 +432,30 @@
       "SUCCESS": "Captain settings updated successfully.",
       "ERROR": "Failed to update Captain settings. Please try again."
     }
+  },
+  "USAGE_SETTINGS": {
+    "TITLE": "Usage",
+    "DESCRIPTION": "View your account's current resource usage and limits.",
+    "RESOURCE_LIMITS": "Resource Limits",
+    "RESOURCE_LIMITS_DESC": "Current usage against configured limits.",
+    "RESOURCE_COUNTS": "Resource Counts",
+    "RESOURCE_COUNTS_DESC": "Total resources in your account.",
+    "STORAGE": "Storage",
+    "STORAGE_DESC": "Total file storage used by attachments.",
+    "AGENTS": "Agents",
+    "INBOXES": "Inboxes",
+    "CONTACTS": "Contacts",
+    "CONVERSATIONS": "Conversations",
+    "MESSAGES": "Messages",
+    "TEAMS": "Teams",
+    "LABELS": "Labels",
+    "CAMPAIGNS": "Campaigns",
+    "AUTOMATION_RULES": "Automation Rules",
+    "CANNED_RESPONSES": "Canned Responses",
+    "WEBHOOKS": "Webhooks",
+    "STORAGE_USED": "Storage Used",
+    "LOADING": "Loading usage data...",
+    "ERROR": "Failed to load usage data. Please try again."
   },
   "BILLING_SETTINGS": {
     "TITLE": "Billing",
