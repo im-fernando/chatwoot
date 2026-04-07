@@ -5,7 +5,7 @@ class MessageFinder
   end
 
   def perform
-    current_messages
+    filter_hidden_messages(current_messages)
   end
 
   private
@@ -15,9 +15,18 @@ class MessageFinder
   end
 
   def messages
-    return conversation_messages if @params[:filter_internal_messages].blank?
+    scoped = conversation_messages
 
-    conversation_messages.where.not('private = ? OR message_type = ?', true, 2)
+    # Always hide CSAT text-flow prompts (sent to customer) from agent timeline.
+    # These are internal flow-control messages and shouldn't be visible in the conversation panel.
+    scoped = scoped.where.not("content_attributes ? 'csat_text_flow_prompt'")
+
+    # Hide the CSAT prompt message itself for Evolution text-flow CSAT.
+    scoped = scoped.where.not(content_type: :input_csat) if hide_csat_text_flow_messages?
+
+    return scoped if @params[:filter_internal_messages].blank?
+
+    scoped.where.not('private = ? OR message_type = ?', true, 2)
   end
 
   def current_messages
@@ -30,6 +39,10 @@ class MessageFinder
     else
       messages_latest
     end
+  end
+
+  def filter_hidden_messages(result)
+    Array(result).reject(&:hidden_from_agent_timeline?)
   end
 
   def messages_after(after_id)
@@ -46,5 +59,14 @@ class MessageFinder
 
   def messages_latest
     messages.reorder('created_at desc').limit(20).reverse
+  end
+
+  def hide_csat_text_flow_messages?
+    inbox = @conversation&.inbox
+    return false if inbox.blank?
+    return false unless inbox.channel_type == 'Channel::Whatsapp'
+    return false unless inbox.channel.try(:provider) == 'evolution_api'
+
+    inbox.csat_config&.dig('text_flow_enabled') == true
   end
 end

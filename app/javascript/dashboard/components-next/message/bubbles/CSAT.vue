@@ -42,29 +42,6 @@ const starRatingValue = computed(() => {
 <template>
   <BaseBubble class="px-4 py-3" data-bubble-name="csat">
     <h4>{{ content || t('CONVERSATION.CSAT_REPLY_MESSAGE') }}</h4>
-    <dl v-if="isRatingSubmitted" class="mt-4">
-      <dt class="text-n-slate-11 italic">
-        {{ t('CONVERSATION.RATING_TITLE') }}
-      </dt>
-      <dd v-if="!isStarRating">
-        {{ t(rating.translationKey) }}
-      </dd>
-      <dd v-else class="flex mt-1">
-        <span v-for="n in 5" :key="n" class="text-2xl mr-1">
-          <i
-            :class="[
-              n <= starRatingValue
-                ? 'i-ri-star-fill text-n-amber-9'
-                : 'i-ri-star-line text-n-slate-10',
-            ]"
-          />
-        </span>
-      </dd>
-
-      <dt v-if="response.feedbackMessage" class="text-n-slate-11 italic mt-2">
-        {{ t('CONVERSATION.FEEDBACK_TITLE') }}
-      </dt>
-      <dd>{{ response.feedbackMessage }}</dd>
-    </dl>
+    <!-- CSAT responses (rating/feedback) should not be visible to agents in the conversation timeline -->
   </BaseBubble>
 </template>

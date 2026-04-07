@@ -23,6 +23,10 @@ class CsatSurveys::TextFlowProcessor
     else
       clear_flow!
     end
+
+    # The customer replies (rating/opt-in/feedback) should not be visible to agents.
+    # We process the value, then remove the incoming message from the conversation timeline.
+    destroy_customer_reply_message!
   end
 
   private
@@ -30,7 +34,7 @@ class CsatSurveys::TextFlowProcessor
   def eligible?
     return false unless message.incoming?
     return false if message.private?
-    return false unless message.sender.instance_of?(Contact)
+    return false unless message.sender.is_a?(Contact)
 
     inbox.channel_type == 'Channel::Whatsapp' &&
       inbox.channel.try(:provider) == 'evolution_api' &&
@@ -61,6 +65,7 @@ class CsatSurveys::TextFlowProcessor
     if rating.blank?
       csat_message&.destroy!
       clear_flow!
+      destroy_customer_reply_message!
       return
     end
 
@@ -93,6 +98,15 @@ class CsatSurveys::TextFlowProcessor
     send_outgoing_text(I18n.t('conversations.templates.csat_text_flow.thanks', default: 'Obrigado pela sua avaliação!'))
   end
 
+  def destroy_customer_reply_message!
+    return if message.blank?
+    return unless message.persisted?
+
+    message.destroy!
+  rescue StandardError => e
+    Rails.logger.warn("CsatSurveys::TextFlowProcessor: failed to destroy csat reply message #{message&.id}: #{e.message}")
+  end
+
   def update_csat_message_submitted_values!(csat_message, rating: nil, feedback_message: nil)
     attrs = csat_message.content_attributes.is_a?(Hash) ? csat_message.content_attributes : {}
     attrs['submitted_values'] ||= {}
@@ -109,7 +123,10 @@ class CsatSurveys::TextFlowProcessor
       inbox: inbox,
       message_type: :outgoing,
       content_type: :text,
-      content: content.to_s
+      content: content.to_s,
+      content_attributes: {
+        csat_text_flow_prompt: true
+      }
     )
   end
 

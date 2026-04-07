@@ -120,6 +120,34 @@ class Message < ApplicationRecord
   scope :today, -> { where("date_trunc('day', created_at) = ?", Date.current) }
   scope :voice_calls, -> { where(content_type: :voice_call) }
 
+  def csat_text_flow_prompt?
+    content_attributes.is_a?(Hash) && content_attributes['csat_text_flow_prompt'] == true
+  end
+
+  def csat_text_flow_active?
+    attrs = conversation&.additional_attributes
+    attrs.is_a?(Hash) && attrs['csat_text_flow'].is_a?(Hash)
+  end
+
+  def csat_text_flow_customer_reply?
+    return false unless incoming?
+    return false unless csat_text_flow_active?
+
+    body = content.to_s.strip.downcase
+    body.match?(/\A[1-5]\z/) || %w[sim s yes y nao não n no].include?(body)
+  end
+
+  def hidden_from_agent_timeline?
+    return true if csat_text_flow_prompt?
+    return true if csat_text_flow_customer_reply?
+
+    if input_csat? && inbox&.channel_type == 'Channel::Whatsapp' && inbox&.channel&.try(:provider) == 'evolution_api'
+      return inbox&.csat_config&.dig('text_flow_enabled') == true
+    end
+
+    false
+  end
+
   # TODO: Get rid of default scope
   # https://stackoverflow.com/a/1834250/939299
   # if you want to change order, use `reorder`

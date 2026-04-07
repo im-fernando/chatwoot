@@ -41,7 +41,9 @@ class ActionCableListener < BaseListener
   def message_created(event)
     message, account = extract_message_and_account(event)
     conversation = message.conversation
-    tokens = user_tokens(account, conversation.inbox.members) + contact_tokens(conversation.contact_inbox, message)
+    agent_tokens = user_tokens(account, conversation.inbox.members)
+    contact_tokens_list = contact_tokens(conversation.contact_inbox, message)
+    tokens = message.hidden_from_agent_timeline? ? contact_tokens_list : (agent_tokens + contact_tokens_list)
 
     broadcast(account, tokens, MESSAGE_CREATED, message.push_event_data)
   end
@@ -49,7 +51,9 @@ class ActionCableListener < BaseListener
   def message_updated(event)
     message, account = extract_message_and_account(event)
     conversation = message.conversation
-    tokens = user_tokens(account, conversation.inbox.members) + contact_tokens(conversation.contact_inbox, message)
+    agent_tokens = user_tokens(account, conversation.inbox.members)
+    contact_tokens_list = contact_tokens(conversation.contact_inbox, message)
+    tokens = message.hidden_from_agent_timeline? ? contact_tokens_list : (agent_tokens + contact_tokens_list)
 
     broadcast(account, tokens, MESSAGE_UPDATED, message.push_event_data.merge(previous_changes: event.data[:previous_changes]))
   end

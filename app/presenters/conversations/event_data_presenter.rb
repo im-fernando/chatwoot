@@ -24,7 +24,8 @@ class Conversations::EventDataPresenter < SimpleDelegator
   private
 
   def push_messages
-    [messages.where(account_id: account_id).chat.last&.push_event_data].compact
+    last_visible = messages.where(account_id: account_id).chat.last(20).reverse.find { |m| !m.hidden_from_agent_timeline? }
+    [last_visible&.push_event_data].compact
   end
 
   def push_meta
