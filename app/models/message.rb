@@ -133,8 +133,10 @@ class Message < ApplicationRecord
     return false unless incoming?
     return false unless csat_text_flow_active?
 
-    body = content.to_s.strip.downcase
-    body.match?(/\A[1-5]\z/) || %w[sim s yes y nao não n no].include?(body)
+    # While the CSAT text flow is active, customer replies are flow-control inputs and
+    # should not be visible in the agent timeline (rating, yes/no, free-text feedback).
+    state = conversation.additional_attributes.dig('csat_text_flow', 'state').to_s
+    %w[await_rating await_feedback_optin await_feedback_text].include?(state)
   end
 
   def hidden_from_agent_timeline?
