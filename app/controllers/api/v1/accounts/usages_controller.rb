@@ -1,4 +1,4 @@
-class Api::V1::Accounts::UsageController < Api::V1::Accounts::BaseController
+class Api::V1::Accounts::UsagesController < Api::V1::Accounts::BaseController
   before_action :check_authorization
 
   def show
