@@ -571,6 +571,12 @@ Rails.application.routes.draw do
   get 'webhooks/whatsapp/:phone_number', to: 'webhooks/whatsapp#verify'
   post 'webhooks/whatsapp/:phone_number', to: 'webhooks/whatsapp#process_payload'
   post 'webhooks/evolution', to: 'webhooks/evolution#process_payload'
+  # Some Evolution API setups send event-specific endpoints (e.g. /webhooks/evolution/messages-upsert).
+  # Support both the single endpoint and event-specific endpoints.
+  post 'webhooks/evolution/messages-upsert', to: 'webhooks/evolution#process_payload'
+  post 'webhooks/evolution/contacts-update', to: 'webhooks/evolution#process_payload'
+  post 'webhooks/evolution/chats-update', to: 'webhooks/evolution#process_payload'
+  post 'webhooks/evolution/:event', to: 'webhooks/evolution#process_payload'
   get 'webhooks/instagram', to: 'webhooks/instagram#verify'
   post 'webhooks/instagram', to: 'webhooks/instagram#events'
   post 'webhooks/tiktok', to: 'webhooks/tiktok#events'

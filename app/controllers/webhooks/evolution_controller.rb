@@ -31,6 +31,12 @@ class Webhooks::EvolutionController < ActionController::API
                else
                  request.parameters.except(:controller, :action).to_unsafe_h.with_indifferent_access
                end
+
+    # Some Evolution configurations post to /webhooks/evolution/<event> instead of sending event in payload.
+    if @payload['event'].blank? && params[:event].present?
+      @payload['event'] = params[:event].to_s.tr('-', '.')
+    end
+
     @instance = @payload['instance'].presence || @payload[:instance].presence
   end
 
