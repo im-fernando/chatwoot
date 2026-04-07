@@ -94,10 +94,10 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
   end
 
   def send_text_message(phone_number, message)
-    quoted = whatsapp_reply_context(message)
+    quoted = whatsapp_reply_context(phone_number, message)
     text = Whatsapp::OutgoingSignature.body_for_whatsapp(message).to_s.gsub(/\n+\z/, '')
     body = { number: normalize_number(phone_number), text: text }
-    body[:quoted] = { key: { id: quoted[:message_id] }, message: { conversation: quoted[:text] } } if quoted.present?
+    body[:quoted] = evolution_quoted_payload(quoted) if quoted.present?
 
     response = HTTParty.post(
       "#{api_base_path}/message/sendText/#{escaped_instance_name}",
@@ -107,14 +107,41 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     process_response(response, message)
   end
 
-  def whatsapp_reply_context(message)
-    reply_to = message.content_attributes&.dig(:in_reply_to_external_id)
+  def whatsapp_reply_context(phone_number, message)
+    reply_to = message.content_attributes&.dig(:in_reply_to_external_id) || message.content_attributes&.dig('in_reply_to_external_id')
     return nil if reply_to.blank?
 
-    reply_message = Message.find_by(source_id: reply_to)
+    # Limit lookup to the same conversation to avoid cross-thread mismatches.
+    reply_message = message.conversation&.messages&.find_by(source_id: reply_to) || Message.find_by(source_id: reply_to)
     return nil if reply_message.blank?
 
-    { message_id: reply_to, text: reply_message.content.to_s }
+    {
+      message_id: reply_to,
+      remote_jid: evolution_remote_jid_for(phone_number),
+      from_me: reply_message.outgoing?,
+      text: reply_message.content.to_s
+    }
+  end
+
+  def evolution_remote_jid_for(phone_number)
+    raw = phone_number.to_s.strip
+    return raw if raw.include?('@')
+
+    "#{normalize_number(raw)}@s.whatsapp.net"
+  end
+
+  # Evolution API expects quoted message metadata; providing remoteJid/fromMe improves quote rendering in WhatsApp clients.
+  def evolution_quoted_payload(quoted)
+    key = {
+      id: quoted[:message_id],
+      remoteJid: quoted[:remote_jid],
+      fromMe: quoted[:from_me]
+    }.compact
+
+    {
+      key: key,
+      message: { conversation: quoted[:text].to_s }
+    }
   end
 
   def send_attachment_message(phone_number, message)
@@ -162,9 +189,8 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
   # Web dashboard often records WAV or WebM — Evolution rejects those on this endpoint.
   def send_evolution_audio(phone_number, message, audio_data, mimetype, filename)
     number = normalize_number(phone_number)
-    quoted = whatsapp_reply_context(message)
-    quoted_payload =
-      quoted.present? ? { key: { id: quoted[:message_id] }, message: { conversation: quoted[:text] } } : nil
+    quoted = whatsapp_reply_context(phone_number, message)
+    quoted_payload = quoted.present? ? evolution_quoted_payload(quoted) : nil
 
     if evolution_audio_ptt_friendly?(mimetype, filename)
       # Evolution/WhatsApp trata melhor áudio de voz como PTT; doc de exemplo retorna audio/mp4 + ptt: true.
@@ -287,9 +313,9 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     text = Whatsapp::OutgoingSignature.trim_body(message.outgoing_content).to_s.gsub(/\n+\z/, '')
     return :skipped if text.blank?
 
-    quoted = whatsapp_reply_context(message)
+    quoted = whatsapp_reply_context(phone_number, message)
     body = { number: normalize_number(phone_number), text: text }
-    body[:quoted] = { key: { id: quoted[:message_id] }, message: { conversation: quoted[:text] } } if quoted.present?
+    body[:quoted] = evolution_quoted_payload(quoted) if quoted.present?
 
     response = HTTParty.post(
       "#{api_base_path}/message/sendText/#{escaped_instance_name}",
@@ -310,9 +336,9 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     text = Whatsapp::OutgoingSignature.body_for_whatsapp(message).to_s.gsub(/\n+\z/, '')
     return :skipped if text.blank?
 
-    quoted = whatsapp_reply_context(message)
+    quoted = whatsapp_reply_context(phone_number, message)
     body = { number: normalize_number(phone_number), text: text }
-    body[:quoted] = { key: { id: quoted[:message_id] }, message: { conversation: quoted[:text] } } if quoted.present?
+    body[:quoted] = evolution_quoted_payload(quoted) if quoted.present?
 
     response = HTTParty.post(
       "#{api_base_path}/message/sendText/#{escaped_instance_name}",
