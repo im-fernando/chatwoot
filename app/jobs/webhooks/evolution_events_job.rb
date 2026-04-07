@@ -41,10 +41,12 @@ class Webhooks::EvolutionEventsJob < ApplicationJob
       return
     end
 
-    # Skip messages sent by us (echo); optional: handle as outgoing_echo later
+    # Messages sent by us via WhatsApp mobile app arrive as echo events (fromMe: true).
+    # We should persist them as outgoing messages in Chatwoot (coexistence).
     key = data['key'].presence || data[:key].presence
     if key && (key['fromMe'] || key[:fromMe])
-      Rails.logger.debug("EvolutionEventsJob: skipping fromMe message")
+      Rails.logger.info("EvolutionEventsJob: processing outgoing echo message for channel #{channel_id}")
+      Whatsapp::IncomingMessageEvolutionService.new(inbox: channel.inbox, params: payload, outgoing_echo: true).perform
       return
     end
 

@@ -94,13 +94,21 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
 
     msg = get_message(data)
     ev_type = evolution_message_type(msg)
-    from_number = remote_jid_to_number(key['remoteJid'] || key[:remoteJid])
-    push_name = data['pushName'].presence || data[:pushName].presence || from_number
+    remote_number = remote_jid_to_number(key['remoteJid'] || key[:remoteJid])
+    push_name = data['pushName'].presence || data[:pushName].presence || remote_number
 
-    message_hash = build_message_hash(key, from_number, ev_type, msg)
-    contacts_hash = [{ wa_id: from_number, profile: { name: push_name } }.with_indifferent_access]
+    message_hash = build_message_hash(key, remote_number, ev_type, msg)
 
-    { messages: [message_hash], contacts: contacts_hash }.with_indifferent_access
+    if outgoing_echo
+      # Echo payloads don't include contacts; IncomingMessageBaseService will use :to to build contact.
+      channel_number = inbox.channel.phone_number.to_s.gsub(/\D/, '')
+      message_hash[:from] = channel_number
+      message_hash[:to] = remote_number
+      { message_echoes: [message_hash] }.with_indifferent_access
+    else
+      contacts_hash = [{ wa_id: remote_number, profile: { name: push_name } }.with_indifferent_access]
+      { messages: [message_hash], contacts: contacts_hash }.with_indifferent_access
+    end
   end
 
   def get_data
