@@ -19,7 +19,9 @@ class MessageFinder
 
     # Always hide CSAT text-flow prompts (sent to customer) from agent timeline.
     # These are internal flow-control messages and shouldn't be visible in the conversation panel.
-    scoped = scoped.where.not("content_attributes::jsonb ? 'csat_text_flow_prompt'")
+    scoped = scoped.where(
+      "NOT (COALESCE(content_attributes::jsonb, '{}'::jsonb) ? 'csat_text_flow_prompt')"
+    )
 
     # Hide the CSAT prompt message itself for Evolution text-flow CSAT.
     scoped = scoped.where.not(content_type: :input_csat) if hide_csat_text_flow_messages?

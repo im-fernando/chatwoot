@@ -32,8 +32,8 @@ class CsatSurveys::TextFlowProcessor
     end
 
     # The customer replies (rating/opt-in/feedback) should not be visible to agents.
-    # We process the value, then remove the incoming message from the conversation timeline.
-    destroy_customer_reply_message!
+    # Instead of deleting messages (which breaks history/pagination), mark them hidden.
+    flag_customer_reply_message_hidden!
   end
 
   private
@@ -114,13 +114,15 @@ class CsatSurveys::TextFlowProcessor
     send_outgoing_text(I18n.t('conversations.templates.csat_text_flow.thanks', default: 'Obrigado pela sua avaliação!'))
   end
 
-  def destroy_customer_reply_message!
+  def flag_customer_reply_message_hidden!
     return if message.blank?
     return unless message.persisted?
 
-    message.destroy!
+    attrs = message.content_attributes.is_a?(Hash) ? message.content_attributes : {}
+    attrs['csat_text_flow_customer_reply'] = true
+    message.update!(content_attributes: attrs)
   rescue StandardError => e
-    Rails.logger.warn("CsatSurveys::TextFlowProcessor: failed to destroy csat reply message #{message&.id}: #{e.message}")
+    Rails.logger.warn("CsatSurveys::TextFlowProcessor: failed to flag csat reply message #{message&.id}: #{e.message}")
   end
 
   def update_csat_message_submitted_values!(csat_message, rating: nil, feedback_message: nil)
