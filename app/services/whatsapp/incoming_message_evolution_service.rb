@@ -2,6 +2,8 @@
 # (contacts + messages with :id, :from, :type, :text => { body }, etc.)
 # Evolution payload: event, instance, data => { key: { remoteJid, fromMe, id }, message: { conversation | imageMessage | ... }, pushName }
 class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseService
+  CSAT_RATING_EMOJIS = %w[😞 😑 😐 😀 😍].freeze
+
   private
 
   def set_conversation
@@ -63,7 +65,13 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
 
     case state
     when 'await_rating'
-      body.match?(/\A[1-5]\z/)
+      return true if body.match?(/\A[1-5]\z/)
+      return true if CSAT_RATING_EMOJIS.include?(body)
+
+      # If the customer sends a single character (e.g. an emoji or a typo),
+      # keep it in the CSAT flow so we can respond with an "invalid option"
+      # message instead of clearing the flow and opening a new conversation.
+      body.scan(/\X/).length == 1
     when 'await_feedback_optin'
       %w[sim s yes y nao não n no].include?(body)
     when 'await_feedback_text'

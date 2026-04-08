@@ -3,6 +3,13 @@ class CsatSurveys::TextFlowProcessor
 
   YES_VALUES = %w[sim s yes y].freeze
   NO_VALUES = %w[nao não n no].freeze
+  CSAT_RATING_EMOJI_MAP = {
+    '😞' => 1,
+    '😑' => 2,
+    '😐' => 3,
+    '😀' => 4,
+    '😍' => 5
+  }.freeze
 
   def perform
     return unless eligible?
@@ -60,12 +67,21 @@ class CsatSurveys::TextFlowProcessor
   end
 
   def handle_rating(csat_message)
-    rating = normalized_body.match?(/\A[1-5]\z/) ? normalized_body.to_i : nil
+    raw_body = message.content.to_s.strip
+    normalized = raw_body.downcase
+    rating = normalized.match?(/\A[1-5]\z/) ? normalized.to_i : CSAT_RATING_EMOJI_MAP[raw_body]
 
     if rating.blank?
-      csat_message&.destroy!
-      clear_flow!
-      destroy_customer_reply_message!
+      graphemes_count = raw_body.scan(/\X/).length
+      if graphemes_count == 1
+        send_outgoing_text(
+          I18n.t(
+            'conversations.templates.csat_text_flow.invalid_rating',
+            default: 'Opção inválida. Digite um número de 1 a 5.'
+          )
+        )
+      end
+
       return
     end
 
