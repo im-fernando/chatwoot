@@ -138,9 +138,18 @@ class Message < ApplicationRecord
     return false unless csat_text_flow_active?
     return false unless conversation&.resolved?
 
+    flow = conversation.additional_attributes.is_a?(Hash) ? conversation.additional_attributes['csat_text_flow'] : nil
+    return false unless flow.is_a?(Hash)
+
+    flow_started_at = flow['created_at'].presence
+    if flow_started_at.present?
+      started_at = Time.zone.parse(flow_started_at.to_s) rescue nil
+      return false if started_at.present? && created_at < started_at
+    end
+
     # While the CSAT text flow is active, customer replies are flow-control inputs and
     # should not be visible in the agent timeline (rating, yes/no, free-text feedback).
-    state = conversation.additional_attributes.dig('csat_text_flow', 'state').to_s
+    state = flow['state'].to_s
     %w[await_rating await_feedback_optin await_feedback_text].include?(state)
   end
 
@@ -444,18 +453,18 @@ class Message < ApplicationRecord
     return false unless flow.is_a?(Hash)
 
     state = flow['state'].to_s
-    body = content.to_s.strip.downcase
-
-    case state
-    when 'await_rating'
-      body.match?(/\A[1-5]\z/)
-    when 'await_feedback_optin'
-      %w[sim s yes y nao não n no].include?(body)
-    when 'await_feedback_text'
-      body.present?
-    else
-      false
+    flow_started_at = flow['created_at'].presence
+    if flow_started_at.present?
+      started_at = Time.zone.parse(flow_started_at.to_s) rescue nil
+      return false if started_at.present? && created_at < started_at
     end
+
+    # While the CSAT text flow is active, customer replies should not reopen the conversation.
+    # This includes invalid selections (eg. a single character/emoji), since we respond with
+    # a validation message and keep the flow active.
+    return true if %w[await_rating await_feedback_optin await_feedback_text].include?(state)
+
+    false
   end
 
   def mark_pending_conversation_as_open_for_human_response
