@@ -78,7 +78,12 @@ ok "Código atualizado"
 
 # ─── 2. Pull da nova imagem ─────────────────────────────────────────
 log "Baixando nova imagem Docker (o container antigo continua rodando)..."
-docker compose -p deployment --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" pull
+# Importante: evitar puxar imagens de infra (ex: redis:alpine) durante deploy,
+# pois falhas transitórias do registry podem abortar o rollout mesmo quando as
+# imagens já existem localmente e os containers atuais seguem rodando.
+# Puxamos apenas as imagens do app (Chatwoot) usadas pelo rollout.
+docker compose -p deployment --project-directory "${APP_DIR}" -f "${COMPOSE_FILE_REL}" \
+  pull rails-blue rails-green sidekiq
 ok "Pull concluído"
 
 # ─── 3. Rodar migrations no container novo (sem servir HTTP) ────────
