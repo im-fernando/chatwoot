@@ -145,12 +145,20 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
   end
 
   def send_attachment_message(phone_number, message)
-    attachment = message.attachments.first
+    last_response_id = nil
+    message.attachments.each_with_index do |attachment, index|
+      last_response_id = send_single_attachment(phone_number, message, attachment, caption_for_index: index)
+    end
+    last_response_id
+  end
+
+  def send_single_attachment(phone_number, message, attachment, caption_for_index: 0)
     type_str = attachment.file_type.to_s
     type = %w[image audio video].include?(type_str) ? type_str : 'document'
     mimetype = evolution_mimetype(attachment, type)
+    # Only the first attachment gets a caption
     caption =
-      if type == 'audio' || attachment.file_type.to_s == 'sticker'
+      if caption_for_index.positive? || type == 'audio' || attachment.file_type.to_s == 'sticker'
         ''
       else
         Whatsapp::OutgoingSignature.body_for_whatsapp(message).to_s.gsub(/\n+\z/, '').presence || ''
@@ -161,10 +169,6 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     media_data, mimetype, filename = evolution_audio_media_bundle(attachment, mimetype, filename) if type == 'audio'
     media_data ||= attachment_media_for_evolution(attachment, mimetype)
     return handle_error_with_message(message, 'Could not read attachment file') if media_data.blank?
-
-    # Evolution áudio/figurinhas não suportam caption de forma consistente.
-    # Também evitamos enviar "preambulo" (ex.: "> Nome") antes do áudio:
-    # se o áudio falhar por formato (webm/wav), o cliente via apenas texto solto.
 
     return send_evolution_audio(phone_number, message, media_data, mimetype, filename) if type == 'audio'
 

@@ -56,7 +56,7 @@
       "FILE": "{sender} has shared a file",
       "MEETING": "{sender} has started a meeting"
     },
-    "UPLOADING_ATTACHMENTS": "Uploading attachments...",
+    "UPLOADING_ATTACHMENTS": "Uploading files… {uploaded}/{total}",
     "REPLIED_TO_STORY": "Replied to your story",
     "UNSUPPORTED_MESSAGE": "This message is unsupported. To view it, please open it on the original platform.",
     "UNSUPPORTED_MESSAGE_FACEBOOK": "This message is unsupported. You can view this message on the Facebook Messenger app.",
