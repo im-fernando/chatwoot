@@ -144,8 +144,7 @@ RSpec.describe Captain::BaseTaskService do
     context 'when API key is not configured' do
       before do
         InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.destroy
-        # Clear memoized api_key
-        service.instance_variable_set(:@api_key, nil)
+        InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.destroy
       end
 
       it 'returns api key missing error' do
@@ -158,6 +157,28 @@ RSpec.describe Captain::BaseTaskService do
       it 'does not make API call' do
         expect(Llm::Config).not_to receive(:with_api_key)
         service.send(:make_api_call, model: model, messages: messages)
+      end
+    end
+
+    context 'when only Gemini installation key is configured' do
+      let(:model) { 'gemini-2.5-flash' }
+
+      before do
+        InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.destroy
+        create(:installation_config, name: 'CAPTAIN_GEMINI_API_KEY', value: 'gemini-install-key')
+      end
+
+      it 'uses the Gemini key and does not report api key missing' do
+        expect(Llm::Config).to receive(:with_api_key).with(
+          'gemini-install-key',
+          provider: 'google',
+          api_base: anything
+        ).and_yield(mock_context)
+
+        result = service.send(:make_api_call, model: model, messages: messages)
+
+        expect(result[:error]).to be_nil
+        expect(result[:message]).to eq('Response')
       end
     end
 

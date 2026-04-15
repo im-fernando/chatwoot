@@ -1,5 +1,6 @@
 class Captain::BaseTaskService
   include Integrations::LlmInstrumentation
+  include Integrations::LlmInstrumentationHelpers
   include Captain::ToolInstrumentation
 
   # gpt-4o-mini supports 128,000 tokens
@@ -40,7 +41,7 @@ class Captain::BaseTaskService
     # Community edition prerequisite checks
     # Enterprise module handles these with more specific error messages (cloud vs self-hosted)
     return { error: I18n.t('captain.disabled'), error_code: 403 } unless captain_tasks_enabled?
-    return { error: I18n.t('captain.api_key_missing'), error_code: 401 } unless api_key_configured?
+    return { error: I18n.t('captain.api_key_missing'), error_code: 401 } unless api_key_configured?(model)
 
     instrumentation_params = build_instrumentation_params(model, messages)
     instrumentation_method = tools.any? ? :instrument_tool_session : :instrument_llm_call
@@ -55,7 +56,12 @@ class Captain::BaseTaskService
   end
 
   def execute_ruby_llm_request(model:, messages:, schema: nil, tools: [])
-    Llm::Config.with_api_key(api_key, api_base: api_base) do |context|
+    provider = determine_provider(model)
+    Llm::Config.with_api_key(
+      resolved_api_key_for(model),
+      provider: provider,
+      api_base: api_base_for_provider(provider)
+    ) do |context|
       chat = build_chat(context, model: model, messages: messages, schema: schema, tools: tools)
 
       conversation_messages = messages.reject { |m| m[:role] == 'system' }
@@ -146,20 +152,42 @@ class Captain::BaseTaskService
     account.feature_enabled?('captain_tasks')
   end
 
-  def api_key_configured?
-    api_key.present?
+  def api_key_configured?(model)
+    resolved_api_key_for(model).present?
   end
 
+  # OpenAI hook key or installation OpenAI key (legacy accessor; LLM calls use {#resolved_api_key_for})
   def api_key
-    @api_key ||= openai_hook&.settings&.dig('api_key') || system_api_key
+    @api_key ||= openai_hook&.settings&.dig('api_key') || system_openai_api_key
+  end
+
+  def resolved_api_key_for(model)
+    hook_key = openai_hook&.settings&.dig('api_key')
+    return hook_key if hook_key.present?
+
+    if determine_provider(model) == 'google'
+      InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.value
+    else
+      system_openai_api_key
+    end
   end
 
   def openai_hook
     @openai_hook ||= account.hooks.find_by(app_id: 'openai', status: 'enabled')
   end
 
-  def system_api_key
-    @system_api_key ||= InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
+  def system_openai_api_key
+    @system_openai_api_key ||= InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
+  end
+
+  def api_base_for_provider(provider)
+    case provider.to_s
+    when 'google'
+      gemini_base = InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_BASE')&.value
+      gemini_base.present? ? gemini_base.chomp('/') : Llm::Config::DEFAULT_GEMINI_API_BASE
+    else
+      api_base
+    end
   end
 
   def prompt_from_file(file_name)

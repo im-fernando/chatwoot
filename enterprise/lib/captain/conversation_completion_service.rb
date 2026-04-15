@@ -56,12 +56,15 @@ class Captain::ConversationCompletionService < Captain::BaseTaskService
     { complete: false, reason: reason }
   end
 
-  # Prefer the system API key over the account's OpenAI hook key.
-  # This is an internal operational evaluation, not a customer-triggered feature,
-  # so it should not consume the customer's OpenAI credits on hosted platforms.
-  # Falls back to the account hook for self-hosted deployments without a system key.
-  def api_key
-    @api_key ||= system_api_key.presence || openai_hook&.settings&.dig('api_key')
+  # Prefer installation keys over the account's OpenAI hook key.
+  # Same rationale as the previous {#api_key} override: internal job, not customer-triggered.
+  def resolved_api_key_for(model)
+    if determine_provider(model) == 'google'
+      return InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.value.presence ||
+             openai_hook&.settings&.dig('api_key')
+    end
+
+    system_openai_api_key.presence || openai_hook&.settings&.dig('api_key')
   end
 
   def event_name
