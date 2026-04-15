@@ -11,17 +11,21 @@ Rails.application.config.after_initialize do
     next if top_level.any? { |t| t.to_s.start_with?('db:') }
   end
 
-  api_key = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
+  openai_api_key = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
+  gemini_api_key = InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.value
   model = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_MODEL')&.value.presence || LlmConstants::DEFAULT_MODEL
   api_endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value || LlmConstants::OPENAI_API_ENDPOINT
+  gemini_api_base = InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_BASE')&.value&.chomp('/')
 
-  if api_key.present?
+  if openai_api_key.present? || gemini_api_key.present?
     Agents.configure do |config|
-      config.openai_api_key = api_key
+      config.openai_api_key = openai_api_key if openai_api_key.present?
       if api_endpoint.present?
         api_base = "#{api_endpoint.chomp('/')}/v1"
         config.openai_api_base = api_base
       end
+      config.gemini_api_key = gemini_api_key if gemini_api_key.present?
+      config.gemini_api_base = gemini_api_base if gemini_api_base.present?
       config.default_model = model
       config.debug = false
     end

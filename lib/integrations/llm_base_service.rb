@@ -1,5 +1,6 @@
 class Integrations::LlmBaseService
   include Integrations::LlmInstrumentation
+  include Integrations::LlmInstrumentationHelpers
 
   # gpt-4o-mini supports 128,000 tokens
   # 1 token is approx 4 characters
@@ -88,6 +89,12 @@ class Integrations::LlmBaseService
     "#{endpoint}/v1"
   end
 
+  def api_base_for(provider)
+    return api_base unless provider.to_s == 'google'
+
+    InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_BASE')&.value&.chomp('/')
+  end
+
   def make_api_call(body)
     parsed_body = JSON.parse(body)
     instrumentation_params = build_instrumentation_params(parsed_body)
@@ -100,8 +107,9 @@ class Integrations::LlmBaseService
   def execute_ruby_llm_request(parsed_body)
     messages = parsed_body['messages']
     model = parsed_body['model']
+    provider = determine_provider(model)
 
-    Llm::Config.with_api_key(hook.settings['api_key'], api_base: api_base) do |context|
+    Llm::Config.with_api_key(hook.settings['api_key'], provider: provider, api_base: api_base_for(provider)) do |context|
       chat = context.chat(model: model)
       setup_chat_with_messages(chat, messages)
     end

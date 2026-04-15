@@ -55,6 +55,22 @@ models:
     display_name: 'Gemini 3 Pro'
     coming_soon: true
     credit_multiplier: 3
+  gemini-3.1-flash:
+    provider: gemini
+    display_name: 'Gemini 3.1 Flash'
+    credit_multiplier: 1
+  gemini-2.5-flash-lite:
+    provider: gemini
+    display_name: 'Gemini 2.5 Flash-Lite'
+    credit_multiplier: 1
+  gemini-2.5-flash:
+    provider: gemini
+    display_name: 'Gemini 2.5 Flash'
+    credit_multiplier: 1
+  gemini-2.5-pro:
+    provider: gemini
+    display_name: 'Gemini 2.5 Pro'
+    credit_multiplier: 3
   whisper-1:
     provider: openai
     display_name: 'Whisper'
@@ -75,6 +91,9 @@ features:
         gpt-5.1,
         gpt-5.2,
         claude-haiku-4.5,
+        gemini-2.5-flash-lite,
+        gemini-2.5-flash,
+        gemini-3.1-flash,
         gemini-3-flash,
         gemini-3-pro,
       ]
@@ -88,6 +107,9 @@ features:
         gpt-5.2,
         claude-haiku-4.5,
         claude-sonnet-4.5,
+        gemini-2.5-flash,
+        gemini-2.5-pro,
+        gemini-3.1-flash,
         gemini-3-flash,
         gemini-3-pro,
       ]
@@ -101,13 +123,16 @@ features:
         gpt-5.2,
         claude-haiku-4.5,
         claude-sonnet-4.5,
+        gemini-2.5-flash,
+        gemini-2.5-pro,
+        gemini-3.1-flash,
         gemini-3-flash,
         gemini-3-pro,
       ]
     default: gpt-5.1
   label_suggestion:
     models:
-      [gpt-4.1-nano, gpt-4.1-mini, gpt-5-mini, gemini-3-flash, claude-haiku-4.5]
+      [gpt-4.1-nano, gpt-4.1-mini, gpt-5-mini, gemini-2.5-flash-lite, gemini-3-flash, claude-haiku-4.5]
     default: gpt-4.1-nano
   audio_transcription:
     models: [whisper-1]
