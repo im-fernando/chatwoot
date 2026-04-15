@@ -9,10 +9,11 @@ module Llm::Config
       @initialized ||= false
     end
 
+    # Re-applies provider keys from the DB on every call. Installation configs can change at runtime
+    # (Super Admin); caching once caused stale keys until process restart (e.g. Gemini added after boot).
     def initialize!
-      return if @initialized
-
       configure_ruby_llm
+      configure_agents_sdk!
       @initialized = true
     end
 
@@ -28,15 +29,46 @@ module Llm::Config
       yield context
     end
 
+    def configure_agents_sdk!
+      require 'agents'
+
+      openai_api_key = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
+      gemini_api_key = InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.value
+      return unless openai_api_key.present? || gemini_api_key.present?
+
+      model = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_MODEL')&.value.presence || LlmConstants::DEFAULT_MODEL
+      api_endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value || LlmConstants::OPENAI_API_ENDPOINT
+      gemini_base = InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_BASE')&.value&.chomp('/')
+
+      Agents.configure do |config|
+        config.openai_api_key = openai_api_key.presence
+        if api_endpoint.present?
+          api_base = "#{api_endpoint.chomp('/')}/v1"
+          config.openai_api_base = api_base
+        end
+        config.gemini_api_key = gemini_api_key.presence
+        config.gemini_api_base = gemini_base if gemini_base.present?
+        config.default_model = model
+        config.debug = false
+      end
+    rescue LoadError
+      # ai-agents optional in some environments
+      nil
+    end
+
     private
 
     def configure_ruby_llm
       RubyLLM.configure do |config|
-        config.openai_api_key = system_api_key('openai') if system_api_key('openai').present?
-        config.openai_api_base = openai_endpoint.chomp('/') if openai_endpoint.present?
+        openai_k = system_api_key('openai')
+        config.openai_api_key = openai_k.presence
 
-        config.gemini_api_key = system_api_key('gemini') if system_api_key('gemini').present?
-        config.gemini_api_base = gemini_api_base if gemini_api_base.present?
+        ep = openai_endpoint
+        config.openai_api_base = ep.present? ? ep.chomp('/') : nil
+
+        gemini_k = system_api_key('gemini')
+        config.gemini_api_key = gemini_k.presence
+        config.gemini_api_base = gemini_api_base.presence || DEFAULT_GEMINI_API_BASE
         config.logger = Rails.logger
       end
     end
