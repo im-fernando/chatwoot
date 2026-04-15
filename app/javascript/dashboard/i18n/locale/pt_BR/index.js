@@ -12,6 +12,7 @@ import companies from './companies.json';
 import components from './components.json';
 import contact from './contact.json';
 import contactFilters from './contactFilters.json';
+import contentTemplates from './contentTemplates.json';
 import conversation from './conversation.json';
 import csatMgmt from './csatMgmt.json';
 import customRole from './customRole.json';
@@ -27,6 +28,7 @@ import integrations from './integrations.json';
 import labelsMgmt from './labelsMgmt.json';
 import login from './login.json';
 import macros from './macros.json';
+import mfa from './mfa.json';
 import report from './report.json';
 import resetPassword from './resetPassword.json';
 import search from './search.json';
@@ -57,6 +59,7 @@ export default {
   ...components,
   ...contact,
   ...contactFilters,
+  ...contentTemplates,
   ...conversation,
   ...csatMgmt,
   ...customRole,
@@ -72,6 +75,7 @@ export default {
   ...labelsMgmt,
   ...login,
   ...macros,
+  ...mfa,
   ...report,
   ...resetPassword,
   ...search,

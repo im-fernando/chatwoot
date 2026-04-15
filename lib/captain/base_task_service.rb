@@ -2,6 +2,7 @@ class Captain::BaseTaskService
   include Integrations::LlmInstrumentation
   include Integrations::LlmInstrumentationHelpers
   include Captain::ToolInstrumentation
+  include Llm::ExceptionTrackable
 
   # gpt-4o-mini supports 128,000 tokens
   # 1 token is approx 4 characters
@@ -57,8 +58,10 @@ class Captain::BaseTaskService
 
   def execute_ruby_llm_request(model:, messages:, schema: nil, tools: [])
     provider = determine_provider(model)
+    credential = { api_key: resolved_api_key_for(model), source: :resolved }
+
     Llm::Config.with_api_key(
-      resolved_api_key_for(model),
+      credential[:api_key],
       provider: provider,
       api_base: api_base_for_provider(provider)
     ) do |context|
@@ -71,7 +74,7 @@ class Captain::BaseTaskService
       build_ruby_llm_response(chat.ask(conversation_messages.last[:content]), messages)
     end
   rescue StandardError => e
-    ChatwootExceptionTracker.new(e, account: account).capture_exception
+    capture_llm_exception(e, credential: credential)
     { error: e.message, request_messages: messages }
   end
 
@@ -188,6 +191,10 @@ class Captain::BaseTaskService
     else
       api_base
     end
+  end
+
+  def exception_tracking_account
+    account
   end
 
   def prompt_from_file(file_name)

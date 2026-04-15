@@ -65,8 +65,8 @@
         "CONTINUE_WITH_TIKTOK": "Continuar com TikTok",
         "CONNECT_YOUR_TIKTOK_PROFILE": "Conecte seu perfil do TikTok",
         "HELP": "Para adicionar seu perfil do TikTok como um canal, é necessário autenticar seu perfil clicando em 'Continuar com TikTok'. ",
-        "ERROR_MESSAGE": "Ocorreu um erro ao conectar com o TikTok. Tente novamente",
-        "ERROR_AUTH": "Ocorreu um erro ao conectar com o TikTok. Tente novamente"
+        "ERROR_MESSAGE": "Ocorreu um erro ao conectar com o TikTok, por favor, tente novamente",
+        "ERROR_AUTH": "Ocorreu um erro ao conectar com o TikTok, por favor, tente novamente"
       },
       "TWITTER": {
         "HELP": "Para adicionar seu perfil do Twitter como um canal, você precisa autenticar seu perfil do Twitter clicando em 'Entrar com o Twitter' ",
@@ -290,7 +290,7 @@
           "TITLE": "Configuração rápida com Meta",
           "DESC": "Use o fluxo de inscrição incorporada do WhatsApp para conectar rapidamente novos números. Você será redirecionado para a Meta para entrar na sua conta do WhatsApp Business. Ter acesso de administrador ajudará a tornar a configuração simples e fácil.",
           "BENEFITS": {
-            "TITLE": "Benefícios da inscrição incorporada:",
+            "TITLE": "Benefícios do Cadastro Incorporado:",
             "EASY_SETUP": "Nenhuma configuração manual é necessária",
             "SECURE_AUTH": "Autenticação segura baseada em OAuth",
             "AUTO_CONFIG": "Configuração automática de webhook e número de telefone"
@@ -304,7 +304,7 @@
           "WAITING_FOR_BUSINESS_INFO": "Por favor, complete a configuração do negócio na janela da Meta...",
           "PROCESSING": "Configurando sua conta do WhatsApp Business",
           "LOADING_SDK": "Carregando SDK do Facebook...",
-          "CANCELLED": "A inscrição no WhatsApp foi cancelada",
+          "CANCELLED": "O cadastro do WhatsApp foi cancelado",
           "SUCCESS_TITLE": "Conta do WhatsApp Business conectada!",
           "WAITING_FOR_AUTH": "Aguardando autenticação...",
           "INVALID_BUSINESS_DATA": "Dados de negócio inválidos recebidos do Facebook. Por favor, tente novamente.",
@@ -412,9 +412,9 @@
           "ERROR": "Este campo é obrigatório"
         },
         "EMAIL": {
-          "LABEL": "e-mail",
+          "LABEL": "E-mail",
           "SUBTITLE": "E-mail para onde os seus clientes lhe enviam tickets de suporte",
-          "PLACEHOLDER": "e-mail"
+          "PLACEHOLDER": "E-mail"
         },
         "SUBMIT_BUTTON": "Criar canal de e-mail",
         "API": {
@@ -422,7 +422,7 @@
         },
         "FINISH_MESSAGE": "Comece a encaminhar seus e-mails para o seguinte endereço de e-mail.",
         "FINISH_MESSAGE_NO_FORWARDING": "Sua caixa de entrada de e-mail foi criada com sucesso! É necessário configurar as credenciais de SMTP e IMAP para enviar e receber e-mails. Sem essas configurações, nenhum e-mail será processado.",
-        "FORWARDING_ADDRESS_LABEL": "Encaminhe os e-mails para este endereço:",
+        "FORWARDING_ADDRESS_LABEL": "Encaminhar e-mails para este endereço:",
         "CONFIGURE_SMTP_IMAP_LINK": "Clique aqui",
         "CONFIGURE_SMTP_IMAP_TEXT": " para configurar IMAP e SMTP"
       },
@@ -487,7 +487,7 @@
             "DESCRIPTION": "Atenda seus clientes no WhatsApp"
           },
           "EMAIL": {
-            "TITLE": "e-mail",
+            "TITLE": "E-mail",
             "DESCRIPTION": "Conectar com Gmail, Outlook ou outros provedores"
           },
           "SMS": {
@@ -739,8 +739,20 @@
       "MESSENGER_SUB_HEAD": "Favor, insira essse código <script> dentro da tag Body de sua página html",
       "ALLOWED_DOMAINS": {
         "TITLE": "Domínios permitidos",
-        "SUBTITLE": "Adicione coringa ou domínios separados por vírgula (deixe em branco para permitir todos), ex: *.chatwoot.dev, chatwoot.com.",
-        "PLACEHOLDER": "Insira domínios separados por vírgula (ex: *.chatwoot.dev, chatwoot.com)"
+        "DESCRIPTION": "Restrinja quais sites podem incorporar seu widget de chat. Por segurança, adicione apenas domínios que você possui e confia. Adicione um ou mais domínios separados por vírgulas. Deixe em branco para permitir todos os domínios (não recomendado para produção).",
+        "PLACEHOLDER": "exemplo.com, www.exemplo.com, app.exemplo.com"
+      },
+      "ALLOW_MOBILE_WEBVIEW": {
+        "LABEL": "Ativar widget em aplicativos móveis",
+        "SUBTITLE": "Marque esta opção se você incorporar o widget em aplicativos iOS ou Android. Aplicativos móveis não enviam informações de domínio, então serão bloqueados pelas restrições de domínio, a menos que isso esteja ativado."
+      },
+      "IDENTITY_VALIDATION": {
+        "TITLE": "Validação de identidade",
+        "DESCRIPTION": "Verifique a autenticidade do usuário gerando tokens seguros. Isso evita que usuários não autorizados se passem por outras pessoas no seu chat.",
+        "SECRET_KEY": "Chave secreta",
+        "VIEW_DOCS": "Ver documentação",
+        "REQUIRE_LABEL": "Exigir validação de identidade para todas as conversas",
+        "REQUIRE_DESCRIPTION": "Quando ativado, os usuários devem fornecer um token de identidade válido para iniciar conversas. Solicitações sem tokens válidos serão rejeitadas."
       },
       "INBOX_AGENTS": "Agentes",
       "INBOX_AGENTS_SUB_TEXT": "Adicionar ou remover agentes dessa caixa de entrada",
@@ -754,8 +766,8 @@
       "SENDER_NAME_SECTION_TEXT": "Ativar/Desativar exibição do nome do agente no e-mail, se estiver desativado, exibirá o nome da empresa",
       "ENABLE_CONTINUITY_VIA_EMAIL": "Habilitar continuidade das conversas por e-mail",
       "ENABLE_CONTINUITY_VIA_EMAIL_SUB_TEXT": "As conversas continuarão sobre o e-mail se o endereço de e-mail de contato estiver disponível.",
-      "LOCK_TO_SINGLE_CONVERSATION": "Bloquear para conversa única",
-      "LOCK_TO_SINGLE_CONVERSATION_SUB_TEXT": "Ativar ou desativar várias conversas para o mesmo contato nesta caixa de entrada",
+      "LOCK_TO_SINGLE_CONVERSATION": "Roteamento de Conversa",
+      "LOCK_TO_SINGLE_CONVERSATION_SUB_TEXT": "Configurar a criação de conversas para contatos existentes",
       "INBOX_UPDATE_TITLE": "Configurações da Caixa de Entrada",
       "INBOX_UPDATE_SUB_TEXT": "Atualize suas configurações de caixa de entrada",
       "AUTO_ASSIGNMENT_SUB_TEXT": "Ativar ou desativar a atribuição automática de novas conversas aos agentes adicionados a essa caixa de entrada.",
@@ -916,7 +928,7 @@
       },
       "MESSAGE_PREVIEW": {
         "LABEL": "Pré-visualização da mensagem",
-        "TOOLTIP": "Isso pode variar ligeiramente quando exibido na plataforma do WhatsApp."
+        "TOOLTIP": "Isso pode variar um pouco quando exibido na plataforma do WhatsApp."
       },
       "TEMPLATE_STATUS": {
         "APPROVED": "Aprovado pelo WhatsApp",
@@ -931,7 +943,7 @@
       },
       "TEMPLATE_UPDATE_DIALOG": {
         "TITLE": "Editar detalhes da pesquisa",
-        "DESCRIPTION": "Vamos excluir o modelo anterior e criar um que será enviado novamente para aprovação do WhatsApp",
+        "DESCRIPTION": "Vamos excluir o modelo anterior e criar outro, que será enviado novamente para aprovação do WhatsApp",
         "CONFIRM": "Criar novo modelo",
         "CANCEL": "Voltar atrás"
       },
@@ -960,7 +972,7 @@
         "SELECT_PLACEHOLDER": "selecionar etiquetas"
       },
       "NOTE": "Nota: pesquisas de CSAT são enviadas apenas uma vez por conversa",
-      "WHATSAPP_NOTE": "Nota: Vamos criar um modelo e enviá-lo para aprovação do WhatsApp. Após a aprovação, as pesquisas serão enviadas apenas uma vez por conversa, conforme a regra da pesquisa.",
+      "WHATSAPP_NOTE": "Observação: Ao salvar, o sistema cria um modelo CSAT dedicado no WhatsApp (usado para capturar avaliação e feedback nos relatórios) e o envia como Utilidade para aprovação. A Meta ainda pode classificá-lo como Marketing com base no conteúdo. Após a aprovação, as pesquisas são enviadas apenas uma vez por conversa, conforme a regra da pesquisa.",
       "API": {
         "SUCCESS_MESSAGE": "Configurações de CSAT atualizadas com sucesso",
         "ERROR_MESSAGE": "Não foi possível atualizar as configurações do CSAT. Por favor, tente novamente mais tarde."
@@ -1092,7 +1104,7 @@
         "WIDGET_BUBBLE_TYPE_LABEL": "Tipo de Balão do Widget",
         "WIDGET_BUBBLE_LAUNCHER_TITLE": {
           "DEFAULT": "Fale conosco no chat",
-          "LABEL": "Título do disparador da Bolha do Widget",
+          "LABEL": "Título do Iniciador",
           "PLACE_HOLDER": "Fale conosco no chat"
         },
         "UPDATE": {
@@ -1117,7 +1129,7 @@
       },
       "WIDGET_SCREEN": {
         "DEFAULT": "Padrão",
-        "CHAT": "Chat"
+        "CHAT": "Modo do chat"
       },
       "REPLY_TIME": {
         "IN_A_FEW_MINUTES": "Normalmente responde em alguns minutos",
@@ -1160,7 +1172,7 @@
       "TWILIO_SMS": "SMS Twilio",
       "WHATSAPP": "WhatsApp",
       "SMS": "SMS",
-      "EMAIL": "e-mail",
+      "EMAIL": "E-mail",
       "TELEGRAM": "Telegram",
       "LINE": "Line",
       "API": "Canal da API",

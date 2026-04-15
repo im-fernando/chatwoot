@@ -56,6 +56,11 @@ class Inboxes extends CacheEnabledApiClient {
   getEvolutionConnectionStatus(inboxId) {
     return axios.get(`${this.url}/${inboxId}/evolution_connection_status`);
   }
+
+  resetSecret(inboxId) {
+    return axios.post(`${this.url}/${inboxId}/reset_secret`);
+
+  }
 }
 
 export default new Inboxes();

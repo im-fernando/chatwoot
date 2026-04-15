@@ -1,5 +1,8 @@
 {
   "DATE_PICKER": {
+    "PREVIOUS_PERIOD": "Período anterior",
+    "NEXT_PERIOD": "Próximo período",
+    "WEEK_NUMBER": "Semana #{weekNumber}",
     "APPLY_BUTTON": "Aplicar",
     "CLEAR_BUTTON": "Limpar",
     "DATE_RANGE_INPUT": {
