@@ -155,6 +155,10 @@ class Captain::BaseTaskService
     account.feature_enabled?('captain_tasks')
   end
 
+  def configured_model
+    InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_MODEL')&.value.presence || GPT_MODEL
+  end
+
   def api_key_configured?(model)
     resolved_api_key_for(model).present?
   end
