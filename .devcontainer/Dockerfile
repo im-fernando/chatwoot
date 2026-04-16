@@ -6,8 +6,8 @@ FROM ghcr.io/chatwoot/chatwoot_codespace:latest
 WORKDIR /workspace
 
 # Copy dependency files first for better caching
-COPY package.json pnpm-lock.yaml ./
-COPY Gemfile Gemfile.lock ./
+COPY --chown=1000:1000 package.json pnpm-lock.yaml ./
+COPY --chown=1000:1000 Gemfile Gemfile.lock ./
 
 # Install dependencies (will be cached if files don't change)
 RUN pnpm install --frozen-lockfile && \
@@ -15,4 +15,4 @@ RUN pnpm install --frozen-lockfile && \
     bundle install --jobs=$(nproc)
 
 # Copy source code after dependencies are installed
-COPY . /workspace
+COPY --chown=1000:1000 . /workspace

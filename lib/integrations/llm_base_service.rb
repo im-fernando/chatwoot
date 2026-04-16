@@ -84,7 +84,7 @@ class Integrations::LlmBaseService
   end
 
   def api_base
-    endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence || 'https://api.openai.com/'
+    endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence || ENV.fetch('CAPTAIN_OPEN_AI_ENDPOINT', nil) || 'https://api.openai.com/'
     endpoint = endpoint.chomp('/')
     "#{endpoint}/v1"
   end
@@ -92,7 +92,7 @@ class Integrations::LlmBaseService
   def api_base_for(provider)
     return api_base unless provider.to_s == 'google'
 
-    InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_BASE')&.value&.chomp('/')
+    (InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_BASE')&.value.presence || ENV.fetch('CAPTAIN_GEMINI_API_BASE', nil))&.chomp('/')
   end
 
   def make_api_call(body)

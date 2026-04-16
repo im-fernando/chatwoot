@@ -33,7 +33,7 @@ class Captain::BaseTaskService
   end
 
   def api_base
-    endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence || 'https://api.openai.com/'
+    endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence || ENV.fetch('CAPTAIN_OPEN_AI_ENDPOINT', nil) || 'https://api.openai.com/'
     endpoint = endpoint.chomp('/')
     "#{endpoint}/v1"
   end
@@ -169,7 +169,7 @@ class Captain::BaseTaskService
     return hook_key if hook_key.present?
 
     if determine_provider(model) == 'google'
-      InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.value
+      InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.value.presence || ENV.fetch('CAPTAIN_GEMINI_API_KEY', nil)
     else
       system_openai_api_key
     end
@@ -180,13 +180,13 @@ class Captain::BaseTaskService
   end
 
   def system_openai_api_key
-    @system_openai_api_key ||= InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
+    @system_openai_api_key ||= InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value.presence || ENV.fetch('CAPTAIN_OPEN_AI_API_KEY', nil)
   end
 
   def api_base_for_provider(provider)
     case provider.to_s
     when 'google'
-      gemini_base = InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_BASE')&.value
+      gemini_base = InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_BASE')&.value.presence || ENV.fetch('CAPTAIN_GEMINI_API_BASE', nil)
       gemini_base.present? ? gemini_base.chomp('/') : Llm::Config::DEFAULT_GEMINI_API_BASE
     else
       api_base

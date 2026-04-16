@@ -32,13 +32,13 @@ module Llm::Config
     def configure_agents_sdk!
       require 'agents'
 
-      openai_api_key = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
-      gemini_api_key = InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.value
+      openai_api_key = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value.presence || ENV.fetch('CAPTAIN_OPEN_AI_API_KEY', nil)
+      gemini_api_key = InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.value.presence || ENV.fetch('CAPTAIN_GEMINI_API_KEY', nil)
       return unless openai_api_key.present? || gemini_api_key.present?
 
       model = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_MODEL')&.value.presence || LlmConstants::DEFAULT_MODEL
-      api_endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value || LlmConstants::OPENAI_API_ENDPOINT
-      gemini_base = InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_BASE')&.value&.chomp('/')
+      api_endpoint = InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence || ENV.fetch('CAPTAIN_OPEN_AI_ENDPOINT', nil) || LlmConstants::OPENAI_API_ENDPOINT
+      gemini_base = (InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_BASE')&.value.presence || ENV.fetch('CAPTAIN_GEMINI_API_BASE', nil))&.chomp('/')
 
       Agents.configure do |config|
         config.openai_api_key = openai_api_key.presence
@@ -87,18 +87,18 @@ module Llm::Config
     def system_api_key(provider)
       case provider.to_s
       when 'gemini', 'google'
-        InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.value
+        InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.value.presence || ENV.fetch('CAPTAIN_GEMINI_API_KEY', nil)
       else
-        InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value
+        InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_API_KEY')&.value.presence || ENV.fetch('CAPTAIN_OPEN_AI_API_KEY', nil)
       end
     end
 
     def openai_endpoint
-      InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value
+      InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_ENDPOINT')&.value.presence || ENV.fetch('CAPTAIN_OPEN_AI_ENDPOINT', nil)
     end
 
     def gemini_api_base
-      InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_BASE')&.value&.chomp('/')
+      (InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_BASE')&.value.presence || ENV.fetch('CAPTAIN_GEMINI_API_BASE', nil))&.chomp('/')
     end
   end
 end

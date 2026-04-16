@@ -31,6 +31,10 @@ services:
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    ports:
+      - "3000:3000"   # Rails (Puma)
+      - "3036:3036"   # Vite dev server
+      - "8025:8025"   # Mailhog UI
     environment:
       POSTGRES_USER: postgres
       POSTGRES_DB: postgres
