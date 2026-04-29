@@ -26,6 +26,9 @@ services:
       start_period: 60s
     profiles:
       - blue
+    networks:
+      - default
+      - shared_backend
 
   rails-green:
     image: fernandomorais1/chatwoot-producao:latest
@@ -54,6 +57,9 @@ services:
       start_period: 60s
     profiles:
       - green
+    networks:
+      - default
+      - shared_backend
 
   sidekiq:
     image: fernandomorais1/chatwoot-producao:latest
@@ -71,6 +77,9 @@ services:
       - INSTALLATION_ENV=docker
     command: ['bundle', 'exec', 'sidekiq', '-C', 'config/sidekiq.yml']
     restart: always
+    networks:
+      - default
+      - shared_backend
 
   postgres:
     image: pgvector/pgvector:pg16
@@ -94,3 +103,8 @@ volumes:
   storage_data:
   postgres_data:
   redis_data:
+
+networks:
+  default: {}
+  shared_backend:
+    external: true
