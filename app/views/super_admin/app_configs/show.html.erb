@@ -17,6 +17,12 @@
 <section class="main-content__body">
   <%= form_with url: super_admin_app_config_url(config: @config) , method: :post do |form| %>
     <% @allowed_configs.each do |key| %>
+      <% if @installation_configs[key]&.dig('section_header').present? %>
+        <div class="flex items-center gap-3 mb-6 mt-2">
+          <span class="text-sm font-semibold text-slate-600 whitespace-nowrap"><%= @installation_configs[key]['section_header'] %></span>
+          <div class="flex-1 h-px bg-slate-200"></div>
+        </div>
+      <% end %>
       <div class="flex mb-8">
         <div class="field-unit__label">
           <%= form.label "app_config[#{key}]", @installation_configs[key]&.dig('display_title') || key %>
