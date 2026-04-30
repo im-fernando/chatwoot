@@ -156,7 +156,9 @@ class Captain::BaseTaskService
   end
 
   def configured_model
-    InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_MODEL')&.value.presence || GPT_MODEL
+    gemini_hook&.settings&.dig('model').presence ||
+      InstallationConfig.find_by(name: 'CAPTAIN_OPEN_AI_MODEL')&.value.presence ||
+      GPT_MODEL
   end
 
   def api_key_configured?(model)
