@@ -56,15 +56,14 @@ class Captain::ConversationCompletionService < Captain::BaseTaskService
     { complete: false, reason: reason }
   end
 
-  # Prefer installation keys over the account's OpenAI hook key.
-  # Same rationale as the previous {#api_key} override: internal job, not customer-triggered.
+  # Prefer installation keys over account hook keys for this internal job.
   def resolved_api_key_for(model)
     if determine_provider(model) == 'google'
-      return InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.value.presence ||
-             openai_hook&.settings&.dig('api_key')
+      InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.value.presence ||
+        gemini_hook&.settings&.dig('api_key')
+    else
+      system_openai_api_key.presence || openai_hook&.settings&.dig('api_key')
     end
-
-    system_openai_api_key.presence || openai_hook&.settings&.dig('api_key')
   end
 
   def event_name

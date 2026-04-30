@@ -169,18 +169,21 @@ class Captain::BaseTaskService
   end
 
   def resolved_api_key_for(model)
-    hook_key = openai_hook&.settings&.dig('api_key')
-    return hook_key if hook_key.present?
-
     if determine_provider(model) == 'google'
-      InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.value.presence || ENV.fetch('CAPTAIN_GEMINI_API_KEY', nil)
+      gemini_hook&.settings&.dig('api_key').presence ||
+        InstallationConfig.find_by(name: 'CAPTAIN_GEMINI_API_KEY')&.value.presence ||
+        ENV.fetch('CAPTAIN_GEMINI_API_KEY', nil)
     else
-      system_openai_api_key
+      openai_hook&.settings&.dig('api_key').presence || system_openai_api_key
     end
   end
 
   def openai_hook
     @openai_hook ||= account.hooks.find_by(app_id: 'openai', status: 'enabled')
+  end
+
+  def gemini_hook
+    @gemini_hook ||= account.hooks.find_by(app_id: 'gemini', status: 'enabled')
   end
 
   def system_openai_api_key

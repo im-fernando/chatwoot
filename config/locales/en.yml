@@ -349,6 +349,10 @@ en:
       name: 'Google Translate'
       short_description: 'Automatically translate customer messages for agents.'
       description: "Integrate Google Translate to help agents easily translate customer messages. This integration automatically detects the language and converts it to the agent's or admin's preferred language."
+    gemini:
+      name: 'Gemini'
+      short_description: 'AI-powered features using Google Gemini models.'
+      description: 'Connect your Google Gemini API key to enable AI features such as reply suggestions, summarization, and message rephrasing using Google Gemini models.'
     openai:
       name: 'OpenAI'
       short_description: 'AI-powered reply suggestions, summarization, and message enhancement.'
