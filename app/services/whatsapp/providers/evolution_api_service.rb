@@ -21,11 +21,9 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     # Evolution API does not use Meta templates; send template body as plain text fallback
     body_text = template_info[:parameters]&.dig(0, 'type') == 'body' ? template_body_text(template_info) : nil
     body_text ||= template_info[:name].to_s
-    response = HTTParty.post(
-      "#{api_base_path}/message/sendText/#{escaped_instance_name}",
-      headers: api_headers,
-      body: { number: normalize_number(phone_number), text: body_text }.to_json
-    )
+    response = evolution_post_with_br_fallback("#{api_base_path}/message/sendText/#{escaped_instance_name}", phone_number) do |number|
+      { number: number, text: body_text }
+    end
     process_response(response, message)
   end
 
@@ -93,17 +91,46 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     phone_number.to_s.delete('+').strip
   end
 
+  # Sends a POST to Evolution API. If the response is a 400 "exists: false" for a Brazilian
+  # 13-digit number with the 9th digit (55+DDD+9+8digits), retries with the 12-digit variant.
+  def evolution_post_with_br_fallback(url, phone_number, &body_builder)
+    number = normalize_number(phone_number)
+    response = HTTParty.post(url, headers: api_headers, body: body_builder.call(number).to_json)
+    return response unless br_number_exists_false?(response, number)
+
+    alt = br_strip_nine(number)
+    return response if alt == number
+
+    HTTParty.post(url, headers: api_headers, body: body_builder.call(alt).to_json)
+  end
+
+  def br_number_exists_false?(response, number)
+    return false if response.success?
+    return false unless response.code == 400
+    return false unless br_nine_number?(number)
+
+    parsed = response.parsed_response
+    msgs = Array(parsed.dig('response', 'message'))
+    msgs.any? { |m| m.is_a?(Hash) && m['exists'] == false }
+  end
+
+  def br_nine_number?(number)
+    number.to_s.match?(/\A55\d{2}9\d{8}\z/)
+  end
+
+  def br_strip_nine(number)
+    number.to_s.sub(/\A(55\d{2})9(\d{8})\z/, '\1\2')
+  end
+
   def send_text_message(phone_number, message)
     quoted = whatsapp_reply_context(phone_number, message)
     text = Whatsapp::OutgoingSignature.body_for_whatsapp(message).to_s.gsub(/\n+\z/, '')
-    body = { number: normalize_number(phone_number), text: text }
-    body[:quoted] = evolution_quoted_payload(quoted) if quoted.present?
 
-    response = HTTParty.post(
-      "#{api_base_path}/message/sendText/#{escaped_instance_name}",
-      headers: api_headers,
-      body: body.to_json
-    )
+    response = evolution_post_with_br_fallback("#{api_base_path}/message/sendText/#{escaped_instance_name}", phone_number) do |number|
+      body = { number: number, text: text }
+      body[:quoted] = evolution_quoted_payload(quoted) if quoted.present?
+      body
+    end
     process_response(response, message)
   end
 
@@ -172,39 +199,25 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
 
     return send_evolution_audio(phone_number, message, media_data, mimetype, filename) if type == 'audio'
 
-    body = {
-      number: normalize_number(phone_number),
-      mediatype: type,
-      mimetype: mimetype,
-      caption: caption,
-      media: media_data,
-      fileName: filename.to_s
-    }
-
-    response = HTTParty.post(
-      "#{api_base_path}/message/sendMedia/#{escaped_instance_name}",
-      headers: api_headers,
-      body: body.to_json
-    )
+    response = evolution_post_with_br_fallback("#{api_base_path}/message/sendMedia/#{escaped_instance_name}", phone_number) do |number|
+      { number: number, mediatype: type, mimetype: mimetype, caption: caption, media: media_data, fileName: filename.to_s }
+    end
     process_response(response, message)
   end
 
   # sendWhatsAppAudio: formatos comuns ok (ogg, mp3, m4a); WAV/WebM do web → transcode M4A + ptt: true.
   # Web dashboard often records WAV or WebM — Evolution rejects those on this endpoint.
   def send_evolution_audio(phone_number, message, audio_data, mimetype, filename)
-    number = normalize_number(phone_number)
     quoted = whatsapp_reply_context(phone_number, message)
     quoted_payload = quoted.present? ? evolution_quoted_payload(quoted) : nil
 
     if evolution_audio_ptt_friendly?(mimetype, filename)
       # Evolution/WhatsApp trata melhor áudio de voz como PTT; doc de exemplo retorna audio/mp4 + ptt: true.
-      body = { number: number, audio: audio_data, ptt: true }
-      body[:quoted] = quoted_payload if quoted_payload.present?
-      response = HTTParty.post(
-        "#{api_base_path}/message/sendWhatsAppAudio/#{escaped_instance_name}",
-        headers: api_headers,
-        body: body.to_json
-      )
+      response = evolution_post_with_br_fallback("#{api_base_path}/message/sendWhatsAppAudio/#{escaped_instance_name}", phone_number) do |n|
+        body = { number: n, audio: audio_data, ptt: true }
+        body[:quoted] = quoted_payload if quoted_payload.present?
+        body
+      end
       parsed = response.parsed_response
       if response.success? && parsed.is_a?(Hash) && parsed['key'].present?
         return process_response(response, message)
@@ -219,20 +232,9 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
   end
 
   def send_evolution_audio_as_media(phone_number, message, audio_data, mimetype, filename)
-    body = {
-      number: normalize_number(phone_number),
-      mediatype: 'audio',
-      mimetype: mimetype,
-      caption: '',
-      media: audio_data,
-      fileName: filename.to_s
-    }
-
-    response = HTTParty.post(
-      "#{api_base_path}/message/sendMedia/#{escaped_instance_name}",
-      headers: api_headers,
-      body: body.to_json
-    )
+    response = evolution_post_with_br_fallback("#{api_base_path}/message/sendMedia/#{escaped_instance_name}", phone_number) do |number|
+      { number: number, mediatype: 'audio', mimetype: mimetype, caption: '', media: audio_data, fileName: filename.to_s }
+    end
     process_response(response, message)
   end
 
@@ -257,11 +259,9 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
   def send_interactive_as_text(phone_number, message)
     # Evolution API has different interactive API; send as text for MVP
     text = Whatsapp::OutgoingSignature.body_for_whatsapp_interactive(message).to_s.gsub(/\n+\z/, '')
-    response = HTTParty.post(
-      "#{api_base_path}/message/sendText/#{escaped_instance_name}",
-      headers: api_headers,
-      body: { number: normalize_number(phone_number), text: text.to_s }.to_json
-    )
+    response = evolution_post_with_br_fallback("#{api_base_path}/message/sendText/#{escaped_instance_name}", phone_number) do |number|
+      { number: number, text: text.to_s }
+    end
     process_response(response, message)
   end
 
@@ -273,15 +273,9 @@ class Whatsapp::Providers::EvolutionApiService < Whatsapp::Providers::BaseServic
     caption = post_evolution_contact_caption(phone_number, message)
     return nil if caption == :failed
 
-    body = {
-      number: normalize_number(phone_number),
-      contact: contacts_payload
-    }
-    response = HTTParty.post(
-      "#{api_base_path}/message/sendContact/#{escaped_instance_name}",
-      headers: api_headers,
-      body: body.to_json
-    )
+    response = evolution_post_with_br_fallback("#{api_base_path}/message/sendContact/#{escaped_instance_name}", phone_number) do |number|
+      { number: number, contact: contacts_payload }
+    end
     process_response(response, message)
   end
 
