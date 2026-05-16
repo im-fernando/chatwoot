@@ -14,6 +14,8 @@ module MessageFilterHelpers
   end
 
   def notifiable?
+    return false if respond_to?(:hidden_from_agent_timeline?) && hidden_from_agent_timeline?
+
     (incoming? || outgoing?) && !private?
   end
 
