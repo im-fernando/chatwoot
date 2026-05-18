@@ -1,7 +1,10 @@
 <script>
 import { mapGetters } from 'vuex';
+import { useRoute, useRouter } from 'vue-router';
 import { useUISettings } from 'dashboard/composables/useUISettings';
 import { useAccount } from 'dashboard/composables/useAccount';
+import { useKeyboardEvents } from 'dashboard/composables/useKeyboardEvents';
+import { conversationListPageURL } from 'dashboard/helper/URLHelper';
 import ChatList from '../../../components/ChatList.vue';
 import ConversationBox from '../../../components/widgets/conversation/ConversationBox.vue';
 import wootConstants from 'dashboard/constants/globals';
@@ -10,6 +13,12 @@ import CmdBarConversationSnooze from 'dashboard/routes/dashboard/commands/CmdBar
 import { emitter } from 'shared/helpers/mitt';
 import SidepanelSwitch from 'dashboard/components-next/Conversation/SidepanelSwitch.vue';
 import ConversationSidebar from 'dashboard/components/widgets/conversation/ConversationSidebar.vue';
+
+const CONVERSATION_TYPE_BY_ROUTE = {
+  conversation_through_mentions: 'mention',
+  conversation_through_participating: 'participating',
+  conversation_through_unattended: 'unattended',
+};
 
 export default {
   components: {
@@ -56,6 +65,30 @@ export default {
   setup() {
     const { uiSettings, updateUISettings } = useUISettings();
     const { accountId } = useAccount();
+    const route = useRoute();
+    const router = useRouter();
+
+    useKeyboardEvents({
+      Escape: {
+        action: () => {
+          // Skip if a modal/overlay is open (modals and the pop-out reply box use .modal-mask)
+          if (document.querySelector('.modal-mask')) return;
+          if (!route.params.conversation_id) return;
+
+          const { params, name } = route;
+          router.push(
+            conversationListPageURL({
+              accountId: accountId.value,
+              inboxId: params.inbox_id,
+              label: params.label,
+              teamId: params.teamId,
+              conversationType: CONVERSATION_TYPE_BY_ROUTE[name],
+              customViewId: params.id,
+            })
+          );
+        },
+      },
+    });
 
     return {
       uiSettings,
