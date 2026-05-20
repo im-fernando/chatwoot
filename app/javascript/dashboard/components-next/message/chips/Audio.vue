@@ -38,11 +38,54 @@ const isMuted = ref(false);
 const currentTime = ref(0);
 const duration = ref(0);
 const playbackSpeed = ref(1);
+const isProbingDuration = ref(false);
 
 const { uid } = getCurrentInstance();
 
+const applyDurationFromPlayer = () => {
+  const value = audioPlayer.value?.duration;
+  if (Number.isFinite(value) && value > 0) {
+    duration.value = value;
+    return true;
+  }
+  return false;
+};
+
+// WhatsApp voice notes (Ogg/Opus/WebM) often arrive without a duration in the
+// container, so the browser reports Infinity until the full file is fetched —
+// that's the "stuck at 0:00 for ~1 minute" case. Seeking past the end forces
+// the browser to scan the stream and expose the real duration.
+const probeDuration = () => {
+  if (isProbingDuration.value || !audioPlayer.value) return;
+  isProbingDuration.value = true;
+  const onProbeTimeUpdate = () => {
+    audioPlayer.value.removeEventListener('timeupdate', onProbeTimeUpdate);
+    try {
+      audioPlayer.value.currentTime = 0;
+    } catch {
+      /* ignore seek errors */
+    }
+    applyDurationFromPlayer();
+    isProbingDuration.value = false;
+  };
+  audioPlayer.value.addEventListener('timeupdate', onProbeTimeUpdate);
+  try {
+    audioPlayer.value.currentTime = 1e101;
+  } catch {
+    audioPlayer.value.removeEventListener('timeupdate', onProbeTimeUpdate);
+    isProbingDuration.value = false;
+  }
+};
+
 const onLoadedMetadata = () => {
-  duration.value = audioPlayer.value?.duration;
+  if (!applyDurationFromPlayer()) {
+    probeDuration();
+  }
+};
+
+const onDurationChange = () => {
+  if (isProbingDuration.value) return;
+  applyDurationFromPlayer();
 };
 
 const playbackSpeedLabel = computed(() => {
@@ -53,7 +96,7 @@ const playbackSpeedLabel = computed(() => {
 // When the onLoadMetadata is called, so we need to set the duration
 // value when the component is mounted
 onMounted(() => {
-  duration.value = audioPlayer.value?.duration;
+  applyDurationFromPlayer();
   audioPlayer.value.playbackRate = playbackSpeed.value;
 });
 
@@ -82,6 +125,7 @@ const toggleMute = () => {
 };
 
 const onTimeUpdate = () => {
+  if (isProbingDuration.value) return;
   currentTime.value = audioPlayer.value?.currentTime;
 };
 
@@ -128,9 +172,11 @@ const downloadAudio = async () => {
   <audio
     ref="audioPlayer"
     controls
+    preload="metadata"
     class="hidden"
     playsinline
     @loadedmetadata="onLoadedMetadata"
+    @durationchange="onDurationChange"
     @timeupdate="onTimeUpdate"
     @ended="onEnd"
   >
