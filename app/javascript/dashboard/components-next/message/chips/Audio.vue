@@ -2,6 +2,7 @@
 import {
   computed,
   onMounted,
+  onBeforeUnmount,
   useTemplateRef,
   ref,
   getCurrentInstance,
@@ -39,6 +40,37 @@ const currentTime = ref(0);
 const duration = ref(0);
 const playbackSpeed = ref(1);
 const isProbingDuration = ref(false);
+const loadAttempts = ref(0);
+const MAX_LOAD_ATTEMPTS = 3;
+let reloadTimer = null;
+let watchdogTimer = null;
+
+const clearTimers = () => {
+  if (reloadTimer) {
+    clearTimeout(reloadTimer);
+    reloadTimer = null;
+  }
+  if (watchdogTimer) {
+    clearTimeout(watchdogTimer);
+    watchdogTimer = null;
+  }
+};
+
+// Race seen in agent-to-agent flow: ActionCable broadcasts MESSAGE_CREATED
+// before the attachment is fully available on the storage backend, so the
+// audio element's first fetch comes back empty/partial and gets stuck at
+// 0:00 with no automatic retry. Calling load() again after a delay forces
+// a fresh fetch once the file is actually there.
+const scheduleReload = () => {
+  if (loadAttempts.value >= MAX_LOAD_ATTEMPTS) return;
+  if (reloadTimer) return;
+  loadAttempts.value += 1;
+  const delay = 1500 * loadAttempts.value;
+  reloadTimer = setTimeout(() => {
+    reloadTimer = null;
+    if (audioPlayer.value) audioPlayer.value.load();
+  }, delay);
+};
 
 const { uid } = getCurrentInstance();
 
@@ -77,15 +109,33 @@ const probeDuration = () => {
   }
 };
 
+const armWatchdog = () => {
+  if (watchdogTimer) clearTimeout(watchdogTimer);
+  watchdogTimer = setTimeout(() => {
+    watchdogTimer = null;
+    if (duration.value > 0) return;
+    scheduleReload();
+  }, 2500);
+};
+
 const onLoadedMetadata = () => {
-  if (!applyDurationFromPlayer()) {
-    probeDuration();
+  if (applyDurationFromPlayer()) {
+    loadAttempts.value = 0;
+    return;
   }
+  probeDuration();
+  armWatchdog();
 };
 
 const onDurationChange = () => {
   if (isProbingDuration.value) return;
-  applyDurationFromPlayer();
+  if (applyDurationFromPlayer()) {
+    loadAttempts.value = 0;
+  }
+};
+
+const onMediaError = () => {
+  scheduleReload();
 };
 
 const playbackSpeedLabel = computed(() => {
@@ -98,6 +148,11 @@ const playbackSpeedLabel = computed(() => {
 onMounted(() => {
   applyDurationFromPlayer();
   audioPlayer.value.playbackRate = playbackSpeed.value;
+  armWatchdog();
+});
+
+onBeforeUnmount(() => {
+  clearTimers();
 });
 
 // Listen for global audio play events and pause if it's not this audio
@@ -179,6 +234,7 @@ const downloadAudio = async () => {
     @durationchange="onDurationChange"
     @timeupdate="onTimeUpdate"
     @ended="onEnd"
+    @error="onMediaError"
   >
     <source :src="timeStampURL" />
   </audio>
