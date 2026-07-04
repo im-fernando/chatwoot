@@ -31,7 +31,7 @@ export default {
       from: 0,
       to: 0,
       groupBy: GROUP_BY_FILTER[1],
-      businessHours: false,
+      businessHours: true,
     };
   },
   methods: {

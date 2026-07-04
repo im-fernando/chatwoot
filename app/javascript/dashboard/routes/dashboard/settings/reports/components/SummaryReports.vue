@@ -40,7 +40,8 @@ const store = useStore();
 
 const from = ref(0);
 const to = ref(0);
-const businessHours = ref(false);
+// Business hours reporting is always enabled; the toggle has been removed.
+const businessHours = ref(true);
 import { useI18n } from 'vue-i18n';
 import SummaryReportLink from './SummaryReportLink.vue';
 

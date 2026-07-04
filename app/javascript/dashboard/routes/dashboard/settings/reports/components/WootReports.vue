@@ -50,7 +50,7 @@ export default {
       to: 0,
       selectedFilter: this.selectedItem,
       groupBy: GROUP_BY_FILTER[1],
-      businessHours: false,
+      businessHours: true,
     };
   },
   computed: {

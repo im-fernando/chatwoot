@@ -91,7 +91,6 @@ export default {
     <ReportFilters
       :show-entity-filter="false"
       show-group-by
-      :show-business-hours="false"
       @filter-change="onFilterChange"
     />
 

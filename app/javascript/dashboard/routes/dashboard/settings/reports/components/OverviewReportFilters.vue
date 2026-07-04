@@ -4,7 +4,6 @@ import { useRoute, useRouter } from 'vue-router';
 import { getUnixStartOfDay, getUnixEndOfDay } from 'helpers/DateHelper';
 import subDays from 'date-fns/subDays';
 import WootDatePicker from 'dashboard/components/ui/DatePicker/DatePicker.vue';
-import ToggleSwitch from 'dashboard/components-next/switch/Switch.vue';
 import {
   generateReportURLParams,
   parseReportURLParams,
@@ -25,7 +24,8 @@ const router = useRouter();
 
 const customDateRange = ref([subDays(new Date(), 6), new Date()]);
 const selectedDateRange = ref(DATE_RANGE_TYPES.LAST_7_DAYS);
-const businessHoursSelected = ref(false);
+// Business hours reporting is always enabled; the toggle has been removed.
+const businessHoursSelected = ref(true);
 
 const updateURLParams = () => {
   const params = generateReportURLParams({
@@ -51,10 +51,6 @@ const onDateRangeChange = value => {
   const [startDate, endDate, rangeType] = value;
   customDateRange.value = [startDate, endDate];
   selectedDateRange.value = rangeType || DATE_RANGE_TYPES.CUSTOM_RANGE;
-  emitChange();
-};
-
-const onBusinessHoursToggle = () => {
   emitChange();
 };
 
@@ -96,17 +92,6 @@ onMounted(() => {
         v-model:range-type="selectedDateRange"
         @date-range-changed="onDateRangeChange"
       />
-    </div>
-    <div class="flex items-center">
-      <span class="mx-2 text-sm whitespace-nowrap">
-        {{ $t('REPORT.BUSINESS_HOURS') }}
-      </span>
-      <span>
-        <ToggleSwitch
-          v-model="businessHoursSelected"
-          @change="onBusinessHoursToggle"
-        />
-      </span>
     </div>
   </div>
 </template>

@@ -8,7 +8,6 @@ import subDays from 'date-fns/subDays';
 import differenceInDays from 'date-fns/differenceInDays';
 import ActiveFilterChip from './Filters/v3/ActiveFilterChip.vue';
 import WootDatePicker from 'dashboard/components/ui/DatePicker/DatePicker.vue';
-import ToggleSwitch from 'dashboard/components-next/switch/Switch.vue';
 import { GROUP_BY_FILTER } from '../constants';
 import { DATE_RANGE_TYPES } from 'dashboard/components/ui/DatePicker/helpers/DatePickerHelper';
 import {
@@ -29,10 +28,6 @@ const props = defineProps({
     default: null,
   },
   showGroupBy: {
-    type: Boolean,
-    default: true,
-  },
-  showBusinessHours: {
     type: Boolean,
     default: true,
   },
@@ -76,7 +71,8 @@ const showGroupByDropdown = ref(false);
 const activeFilterType = ref('');
 const customDateRange = ref([subDays(new Date(), 6), new Date()]);
 const selectedDateRange = ref(DATE_RANGE_TYPES.LAST_7_DAYS);
-const businessHoursSelected = ref(false);
+// Business hours reporting is always enabled; the toggle has been removed.
+const businessHoursSelected = ref(true);
 const groupBy = ref(GROUP_BY_FILTER[1]);
 const groupByfilterItemsList = ref([{ id: 1, name: 'Day' }]);
 
@@ -259,10 +255,6 @@ const onDateRangeChange = value => {
   emitChange();
 };
 
-const onBusinessHoursToggle = () => {
-  emitChange();
-};
-
 const onGroupByFilterChange = payload => {
   groupBy.value = GROUP_BY_FILTER[payload.id];
   showGroupByDropdown.value = false;
@@ -362,21 +354,6 @@ onMounted(() => {
         @add-filter="onGroupByFilterChange"
         @remove-filter="() => {}"
       />
-
-      <div
-        v-if="showBusinessHours"
-        class="flex items-center flex-shrink-0 ltr:ml-auto rtl:mr-auto"
-      >
-        <span class="mx-2 text-sm whitespace-nowrap">
-          {{ $t('REPORT.BUSINESS_HOURS') }}
-        </span>
-        <span>
-          <ToggleSwitch
-            v-model="businessHoursSelected"
-            @change="onBusinessHoursToggle"
-          />
-        </span>
-      </div>
     </div>
   </div>
 </template>
