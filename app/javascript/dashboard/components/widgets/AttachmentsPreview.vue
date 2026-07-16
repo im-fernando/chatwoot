@@ -17,11 +17,11 @@ const emit = defineEmits(['removeAttachment']);
 const { t } = useI18n();
 
 const nonRecordedAudioAttachments = computed(() => {
-  return props.attachments.filter(attachment => !attachment?.isRecordedAudio);
+  return props.attachments.filter(attachment => !attachment?.isVoiceMessage);
 });
 
 const recordedAudioAttachments = computed(() =>
-  props.attachments.filter(attachment => attachment.isRecordedAudio)
+  props.attachments.filter(attachment => attachment.isVoiceMessage)
 );
 
 const uploadingCount = computed(() =>

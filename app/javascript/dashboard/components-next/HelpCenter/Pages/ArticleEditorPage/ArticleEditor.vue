@@ -121,7 +121,7 @@ const handleCreateArticle = event => {
           custom-text-area-class="!text-[32px] !leading-[48px] !font-medium !tracking-[0.2px]"
           custom-text-area-wrapper-class="border-0 !bg-transparent dark:!bg-transparent !py-0 !px-0"
           placeholder="Title"
-          autofocus
+          :autofocus="isNewArticle"
           @blur="handleCreateArticle"
         />
         <ArticleEditorControls
@@ -138,22 +138,30 @@ const handleCreateArticle = event => {
           t('HELP_CENTER.EDIT_ARTICLE_PAGE.EDIT_ARTICLE.EDITOR_PLACEHOLDER')
         "
         :enabled-menu-options="ARTICLE_EDITOR_MENU_OPTIONS"
-        :autofocus="false"
+        :autofocus="!isNewArticle"
       />
     </template>
   </HelpCenterLayout>
 </template>
 
 <style lang="scss" scoped>
-::v-deep {
-  .ProseMirror .empty-node::before {
-    @apply text-n-slate-10 text-base;
-  }
+:deep(.ProseMirror .empty-node::before) {
+  @apply text-n-slate-10 text-base;
+}
 
-  .ProseMirror-menubar-wrapper {
-    .ProseMirror-woot-style {
-      @apply min-h-[15rem] max-h-full;
-    }
+:deep(.ProseMirror-menubar-wrapper) {
+  .ProseMirror-woot-style {
+    @apply min-h-[15rem] max-h-full;
+  }
+}
+
+:deep(.ProseMirror-menubar) {
+  display: none; // Hide by default
+}
+
+:deep(.editor-root .has-selection) {
+  .ProseMirror-menubar:not(:has(*)) {
+    display: none !important;
   }
 
   // Help Center article editor: keep toolbar always visible and sticky at the top

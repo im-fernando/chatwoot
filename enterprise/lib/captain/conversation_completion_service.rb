@@ -66,6 +66,10 @@ class Captain::ConversationCompletionService < Captain::BaseTaskService
     end
   end
 
+  def counts_toward_usage?
+    false
+  end
+
   def event_name
     'captain.conversation_completion'
   end

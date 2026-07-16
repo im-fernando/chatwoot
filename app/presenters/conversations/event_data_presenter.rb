@@ -21,11 +21,23 @@ class Conversations::EventDataPresenter < SimpleDelegator
     }
   end
 
+  # Like #push_data but with message text normalized for external integrations (webhooks).
+  def webhook_data
+    push_data.merge(
+      account: account.webhook_data,
+      messages: webhook_push_messages
+    )
+  end
+
   private
 
   def push_messages
     last_visible = messages.where(account_id: account_id).chat.last(20).reverse.find { |m| !m.hidden_from_agent_timeline? }
     [last_visible&.push_event_data].compact
+  end
+
+  def webhook_push_messages
+    [messages.where(account_id: account_id).chat.last&.webhook_push_event_data].compact
   end
 
   def push_meta

@@ -1,42 +1,10 @@
 <script setup>
-import { computed } from 'vue';
 import BaseBubble from './Base.vue';
 import { useI18n } from 'vue-i18n';
-import { CSAT_RATINGS, CSAT_DISPLAY_TYPES } from 'shared/constants/messages';
 import { useMessageContext } from '../provider.js';
 
-const { contentAttributes, content } = useMessageContext();
+const { content } = useMessageContext();
 const { t } = useI18n();
-
-const response = computed(() => {
-  return contentAttributes.value?.submittedValues?.csatSurveyResponse ?? {};
-});
-
-const isRatingSubmitted = computed(() => {
-  return !!response.value.rating;
-});
-
-const displayType = computed(() => {
-  return contentAttributes.value?.displayType || CSAT_DISPLAY_TYPES.EMOJI;
-});
-
-const isStarRating = computed(() => {
-  return displayType.value === CSAT_DISPLAY_TYPES.STAR;
-});
-
-const rating = computed(() => {
-  if (isRatingSubmitted.value) {
-    return CSAT_RATINGS.find(
-      csatOption => csatOption.value === response.value.rating
-    );
-  }
-
-  return null;
-});
-
-const starRatingValue = computed(() => {
-  return response.value.rating || 0;
-});
 </script>
 
 <template>

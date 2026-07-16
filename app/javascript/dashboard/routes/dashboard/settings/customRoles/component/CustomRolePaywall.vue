@@ -78,8 +78,8 @@ const tableHeaders = computed(() => {
 
 <template>
   <div class="w-full min-h-[12rem] relative">
-    <div class="w-full space-y-3 text-sm">
-      <table class="w-full">
+    <div class="w-full space-y-3 text-sm overflow-x-auto">
+      <table class="min-w-full">
         <thead class="opacity-30 dark:opacity-30">
           <tr>
             <th
@@ -93,12 +93,8 @@ const tableHeaders = computed(() => {
             </th>
           </tr>
         </thead>
-        <tbody>
-          <CustomRoleListItem
-            class="opacity-25 dark:opacity-20"
-            :roles="dummyCustomRolesData"
-            :loading="{}"
-          />
+        <tbody class="opacity-25 dark:opacity-20">
+          <CustomRoleListItem :roles="dummyCustomRolesData" :loading="{}" />
         </tbody>
       </table>
     </div>

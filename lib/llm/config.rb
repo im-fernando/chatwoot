@@ -22,6 +22,7 @@ module Llm::Config
     end
 
     def with_api_key(api_key, provider: 'openai', api_base: nil)
+      initialize!
       context = RubyLLM.context do |config|
         apply_provider_config(config, provider.to_s, api_key: api_key, api_base: api_base)
       end
@@ -69,6 +70,8 @@ module Llm::Config
         gemini_k = system_api_key('gemini')
         config.gemini_api_key = gemini_k.presence
         config.gemini_api_base = gemini_api_base.presence || DEFAULT_GEMINI_API_BASE
+
+        config.model_registry_file = Rails.root.join('config/llm_models.json').to_s
         config.logger = Rails.logger
       end
     end

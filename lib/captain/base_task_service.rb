@@ -161,6 +161,15 @@ class Captain::BaseTaskService
       GPT_MODEL
   end
 
+  # Extension point consulted by the Enterprise quota wrapper. Subclasses
+  # whose calls should not consume captain_responses should override this to
+  # return false. When false, the wrapper neither blocks the call on an
+  # exhausted captain_responses quota nor decrements it on success — the call
+  # participates in the quota system in neither direction.
+  def counts_toward_usage?
+    llm_credential&.dig(:source) != :hook
+  end
+
   def api_key_configured?(model)
     resolved_api_key_for(model).present?
   end
@@ -178,6 +187,27 @@ class Captain::BaseTaskService
     else
       openai_hook&.settings&.dig('api_key').presence || system_openai_api_key
     end
+  end
+
+  def llm_credential
+    @llm_credential ||= if use_account_openai_hook?
+                          hook_llm_credential || system_llm_credential
+                        else
+                          system_llm_credential
+                        end
+  end
+
+  def use_account_openai_hook?
+    false
+  end
+
+  def hook_llm_credential
+    key = openai_hook&.settings&.dig('api_key').presence
+    { api_key: key, source: :hook } if key
+  end
+
+  def system_llm_credential
+    { api_key: system_openai_api_key, source: :system } if system_openai_api_key.present?
   end
 
   def openai_hook

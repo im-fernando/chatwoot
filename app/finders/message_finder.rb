@@ -72,3 +72,5 @@ class MessageFinder
     inbox.csat_config&.dig('text_flow_enabled') == true
   end
 end
+
+MessageFinder.prepend_mod_with('MessageFinder')
