@@ -46,17 +46,11 @@ jobs:
     steps:
       - name: SSH and deploy
         uses: appleboy/ssh-action@v1
-        env:
-          SUDO_PASS: ${{ secrets.VPS_PASSWORD }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          envs: SUDO_PASS
+          key: ${{ secrets.VPS_SSH_KEY }}
           command_timeout: 15m
           script: |
-            echo "$SUDO_PASS" | sudo -S bash -c \
-              'echo "deploy ALL=(ALL) NOPASSWD: /opt/chatwoot/deployment/update_zero_downtime.sh" > /etc/sudoers.d/chatwoot-deploy && chmod 440 /etc/sudoers.d/chatwoot-deploy' \
-              2>/dev/null || true
             cd /opt/chatwoot
             sudo ./deployment/update_zero_downtime.sh
