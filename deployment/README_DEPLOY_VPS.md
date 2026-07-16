@@ -5,7 +5,7 @@ Este fluxo sobe o Chatwoot em produção via Docker, com Nginx + Let's Encrypt, 
 ## Pré-requisitos
 
 - VPS Ubuntu com acesso `root` (ou `sudo`)
-- DNS A/AAAA apontando `app.jssystem-server.xyz` para o IP da VPS (`147.93.1.171`)
+- DNS A/AAAA apontando `app.jssystem-server.xyz` para o IP da VPS (`92.118.59.246`)
 - Seu repositório no GitHub (com suas modificações)
 
 ## Deploy inicial
