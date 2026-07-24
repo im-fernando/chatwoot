@@ -200,6 +200,7 @@ class Account < ApplicationRecord
   def reset_cache_keys
     super
     clear_unread_conversation_counts_cache
+  end
 
   private
 
