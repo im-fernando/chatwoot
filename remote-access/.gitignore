@@ -1,0 +1,3 @@
+# Banco, certificados e config real do MeshCentral — contém credenciais
+meshcentral-data/*
+!meshcentral-data/config.json.example

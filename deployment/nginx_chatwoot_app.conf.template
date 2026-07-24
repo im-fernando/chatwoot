@@ -36,6 +36,19 @@ server {
   access_log /var/log/nginx/chatwoot_access_443.log;
   error_log /var/log/nginx/chatwoot_error_443.log;
 
+  # Página do Dashboard App de acesso remoto (estático, embutido em iframe
+  # na conversa). Prefixo mais específico que "/", então casa antes do proxy.
+  location /acesso-remoto/ {
+    alias /var/www/acesso-remoto/;
+    index index.html;
+
+    # add_header em location descarta os herdados do server, então o HSTS
+    # precisa ser repetido aqui.
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+    add_header Content-Security-Policy "frame-ancestors https://__DOMAIN__" always;
+    add_header Cache-Control "no-store" always;
+  }
+
   location / {
     proxy_pass http://chatwoot_backend;
     proxy_redirect off;
