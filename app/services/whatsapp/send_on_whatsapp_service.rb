@@ -6,14 +6,12 @@ class Whatsapp::SendOnWhatsappService < Base::SendOnChannelService
   end
 
   def perform_reply
-    # Evolution API (Baileys) does not have the Meta 24h session restriction.
-    # If the user explicitly provides template_params, we still send a template-style payload.
-    should_send_template_message = template_params.present? || (!evolution_provider? && !message.conversation.can_reply?)
-    if should_send_template_message
-      send_template_message
-    else
-      send_session_message
-    end
+    return send_template_message if template_params.present?
+    # Evolution API (Baileys) does not have the Meta 24h session restriction,
+    # so it can always send session messages regardless of the reply window.
+    return send_session_message if evolution_provider? || message.conversation.can_reply?
+
+    message.update!(status: :failed, external_error: I18n.t('errors.whatsapp.message_outside_messaging_window'))
   end
 
   def send_template_message

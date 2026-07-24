@@ -79,6 +79,9 @@
       },
       "priority_desc_created_at_asc": {
         "TEXT": "Prioridade: mais altas primeiro; Criado em: mais antigas primeiro"
+      },
+      "unread": {
+        "TEXT": "Contagem de não lidas: Maior primeiro"
       }
     },
     "ATTACHMENTS": {
