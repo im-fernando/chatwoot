@@ -50,7 +50,11 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          command_timeout: 15m
+          command_timeout: 20m
           script: |
-            cd /opt/chatwoot
-            sudo ./deployment/update_zero_downtime.sh
+            set -e
+            cd /home/deploy/chatwoot
+            docker compose pull
+            docker compose run --rm rails bundle exec rails db:chatwoot_prepare
+            docker compose up -d
+            docker image prune -f
