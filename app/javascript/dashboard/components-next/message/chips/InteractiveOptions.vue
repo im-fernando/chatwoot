@@ -1,17 +1,15 @@
 <script setup>
 import { computed } from 'vue';
-import { emitter } from 'shared/helpers/mitt';
-import { LocalStorage } from 'shared/helpers/localStorage';
-import { LOCAL_STORAGE_KEYS } from 'dashboard/constants/localStorage';
-import { BUS_EVENTS } from 'shared/constants/busEvents';
+import { useStore } from 'dashboard/composables/store';
 import { useMessageContext } from '../provider.js';
 
 /**
  * Options offered by an incoming WhatsApp interactive message (buttons, list or template).
- * Picking one quotes the prompt and drops the option text into the reply box, so the agent
- * answers exactly like a customer tapping the button would.
+ * Picking one replies with that exact text, quoting the prompt and flagged as an interactive
+ * reply so it goes out unsigned — the same thing the customer tapping the button would send.
  */
 const { id, conversationId, contentAttributes } = useMessageContext();
+const store = useStore();
 
 const options = computed(
   () => contentAttributes.value?.interactiveOptions ?? []
@@ -23,13 +21,15 @@ const selectOption = option => {
     return;
   }
 
-  LocalStorage.updateJsonStore(
-    LOCAL_STORAGE_KEYS.MESSAGE_REPLY_TO,
-    conversationId.value,
-    id.value
-  );
-  emitter.emit(BUS_EVENTS.TOGGLE_REPLY_TO_MESSAGE);
-  emitter.emit(BUS_EVENTS.INSERT_INTO_NORMAL_EDITOR, option.title);
+  store.dispatch('createPendingMessageAndSend', {
+    conversationId: conversationId.value,
+    message: option.title,
+    private: false,
+    contentAttributes: {
+      in_reply_to: id.value,
+      interactive_reply: true,
+    },
+  });
 };
 </script>
 

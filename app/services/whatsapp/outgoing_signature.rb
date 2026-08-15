@@ -6,6 +6,10 @@ module Whatsapp
     module_function
 
     def line_for(message)
+      # Replies sent by picking an interactive option must look like the customer tapping the
+      # button on WhatsApp, so they go out unsigned.
+      return nil if interactive_reply?(message)
+
       user = message.sender
       return nil unless user.is_a?(User)
 
@@ -13,6 +17,13 @@ module Whatsapp
       return nil if name.blank?
 
       "> #{name}"
+    end
+
+    def interactive_reply?(message)
+      attrs = message.content_attributes
+      return false if attrs.blank?
+
+      attrs['interactive_reply'] || attrs[:interactive_reply] || false
     end
 
     def trim_body(text)
