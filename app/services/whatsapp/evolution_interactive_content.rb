@@ -1,10 +1,9 @@
 # Evolution/Baileys interactive payloads (buttons, lists, templates and their replies) carry
 # their text outside of `conversation`/`extendedTextMessage`, so they reach Chatwoot as an
-# empty bubble unless it is extracted here. Renders the prompt text followed by the offered
-# options, and the chosen option for replies.
+# empty bubble unless it is extracted here. `text_for` returns the prompt text (or the chosen
+# option, for replies) and `options_for` the offered options, which the dashboard renders as
+# clickable chips.
 module Whatsapp::EvolutionInteractiveContent
-  OPTION_PREFIX = '▸'.freeze
-
   module_function
 
   # Returns the message body for an interactive payload, or nil when `msg` isn't one.
@@ -12,15 +11,30 @@ module Whatsapp::EvolutionInteractiveContent
     prompt_text(msg) || reply_text(msg)
   end
 
+  # Returns [{ 'title' => String, 'url' => String? }] for payloads that offer options.
+  def options_for(msg)
+    if (sub = fetch(msg, 'buttonsMessage'))
+      button_options(sub)
+    elsif (sub = fetch(msg, 'listMessage'))
+      list_options(sub)
+    elsif (sub = fetch(msg, 'interactiveMessage'))
+      native_flow_options(sub)
+    elsif (sub = fetch(msg, 'templateMessage'))
+      template_options(hydrated_template(sub))
+    else
+      []
+    end
+  end
+
   def prompt_text(msg)
     if (sub = fetch(msg, 'buttonsMessage'))
-      compose(fetch(sub, 'contentText'), button_options(sub))
+      fetch(sub, 'contentText')
     elsif (sub = fetch(msg, 'listMessage'))
-      compose(fetch(sub, 'description'), list_options(sub))
+      fetch(sub, 'description')
     elsif (sub = fetch(msg, 'interactiveMessage'))
-      compose(fetch(fetch(sub, 'body'), 'text'), native_flow_options(sub))
+      fetch(fetch(sub, 'body'), 'text')
     elsif (sub = fetch(msg, 'templateMessage'))
-      template_text(sub)
+      fetch(hydrated_template(sub), 'hydratedContentText')
     end
   end
 
@@ -53,24 +67,21 @@ module Whatsapp::EvolutionInteractiveContent
     end
   end
 
-  def template_text(sub)
-    template = fetch(sub, 'hydratedTemplate') || fetch(sub, 'hydratedFourRowTemplate')
-    options = Array(fetch(template, 'hydratedButtons')).filter_map do |button|
+  def template_options(template)
+    Array(fetch(template, 'hydratedButtons')).filter_map do |button|
       hydrated = fetch(button, 'quickReplyButton') || fetch(button, 'urlButton') || fetch(button, 'callButton')
       option(fetch(hydrated, 'displayText'), fetch(hydrated, 'url'))
     end
-
-    compose(fetch(template, 'hydratedContentText'), options)
   end
 
-  def compose(text, options)
-    [text.presence, options.presence&.join("\n")].compact.join("\n\n").presence
+  def hydrated_template(sub)
+    fetch(sub, 'hydratedTemplate') || fetch(sub, 'hydratedFourRowTemplate')
   end
 
-  def option(label, url = nil)
-    return nil if label.blank?
+  def option(title, url = nil)
+    return nil if title.blank?
 
-    url.present? ? "#{OPTION_PREFIX} #{label}: #{url}" : "#{OPTION_PREFIX} #{label}"
+    { 'title' => title, 'url' => url.presence }.compact
   end
 
   # buttonParamsJson is a JSON string built by the sender, so a malformed one should only

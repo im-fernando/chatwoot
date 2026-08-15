@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import BaseBubble from 'next/message/bubbles/Base.vue';
 import FormattedContent from './FormattedContent.vue';
 import AttachmentChips from 'next/message/chips/AttachmentChips.vue';
+import InteractiveOptions from 'next/message/chips/InteractiveOptions.vue';
 import TranslationToggle from 'dashboard/components-next/message/TranslationToggle.vue';
 import { MESSAGE_TYPES } from '../../constants';
 import { useMessageContext } from '../../provider.js';
@@ -32,8 +33,16 @@ const isTemplate = computed(() => {
   return messageType.value === MESSAGE_TYPES.TEMPLATE;
 });
 
+const interactiveOptions = computed(
+  () => contentAttributes.value?.interactiveOptions ?? []
+);
+
 const isEmpty = computed(() => {
-  return !content.value && !attachments.value?.length;
+  return (
+    !content.value &&
+    !attachments.value?.length &&
+    !interactiveOptions.value.length
+  );
 });
 
 const handleSeeOriginal = () => {
@@ -55,6 +64,7 @@ const handleSeeOriginal = () => {
         @toggle="handleSeeOriginal"
       />
       <AttachmentChips :attachments="attachments" class="gap-2" />
+      <InteractiveOptions v-if="interactiveOptions.length" />
       <template v-if="isTemplate">
         <div
           v-if="contentAttributes.submittedEmail"

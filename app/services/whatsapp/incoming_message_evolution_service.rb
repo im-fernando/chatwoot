@@ -152,8 +152,26 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
     return 'location' if msg['locationMessage'].present? || msg[:locationMessage].present?
     return 'contacts' if msg['contactsArrayMessage'].present? || msg[:contactsArrayMessage].present?
     return 'contacts' if msg['contactMessage'].present? || msg[:contactMessage].present?
+    return reaction_message_type(msg) if evolution_reaction(msg).present?
 
     'text'
+  end
+
+  def evolution_reaction(msg)
+    msg['reactionMessage'].presence || msg[:reactionMessage].presence
+  end
+
+  # A reaction is rendered as its emoji, quoting the message it reacts to. Removing a reaction
+  # sends the same payload with a blank emoji, and 'reaction' is what the base service skips.
+  def reaction_message_type(msg)
+    evolution_reaction_emoji(msg).present? ? 'text' : 'reaction'
+  end
+
+  def evolution_reaction_emoji(msg)
+    reaction = evolution_reaction(msg)
+    return '' if reaction.blank?
+
+    (reaction['text'] || reaction[:text]).to_s
   end
 
   def build_message_hash(key, from_number, ev_type, msg)
@@ -189,13 +207,26 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
       msg_hash[:text] = { body: evolution_text_content(msg).presence || '' }
     end
 
+    options = Whatsapp::EvolutionInteractiveContent.options_for(msg)
+    msg_hash[:interactive_options] = options if options.present?
+
     msg_hash[:context] = { id: evolution_quoted_id(msg) } if evolution_quoted_id(msg).present?
     msg_hash.with_indifferent_access
+  end
+
+  # Carries the offered options into content_attributes so the dashboard can render them as
+  # clickable chips instead of losing them.
+  def message_content_attributes(message)
+    options = message[:interactive_options].presence || message['interactive_options'].presence
+    return super if options.blank?
+
+    super.merge(interactive_options: options)
   end
 
   def evolution_text_content(msg)
     msg['conversation'].presence || msg[:conversation].presence ||
       msg.dig('extendedTextMessage', 'text') || msg.dig(:extendedTextMessage, :text) ||
+      evolution_reaction_emoji(msg).presence ||
       Whatsapp::EvolutionInteractiveContent.text_for(msg)
   end
 
@@ -246,6 +277,12 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
   end
 
   def evolution_quoted_id(msg)
+    reaction = evolution_reaction(msg)
+    if reaction.present?
+      reacted_key = reaction['key'] || reaction[:key]
+      return reacted_key&.dig('id') || reacted_key&.dig(:id)
+    end
+
     QUOTING_MESSAGE_KEYS.each do |key|
       sub = msg[key].presence || msg[key.to_sym].presence
       next if sub.blank?
