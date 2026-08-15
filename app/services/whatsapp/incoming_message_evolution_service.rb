@@ -3,6 +3,9 @@
 # Evolution payload: event, instance, data => { key: { remoteJid, fromMe, id }, message: { conversation | imageMessage | ... }, pushName }
 class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseService
   CSAT_RATING_EMOJIS = %w[😞 😑 😐 😀 😍].freeze
+  # Payloads that carry the quoted message they reply to. Button/list replies quote the
+  # prompt they came from, so reading them keeps the reply threaded like WhatsApp shows it.
+  QUOTING_MESSAGE_KEYS = %w[extendedTextMessage buttonsResponseMessage listResponseMessage templateButtonReplyMessage].freeze
 
   private
 
@@ -192,7 +195,8 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
 
   def evolution_text_content(msg)
     msg['conversation'].presence || msg[:conversation].presence ||
-      msg.dig('extendedTextMessage', 'text') || msg.dig(:extendedTextMessage, :text)
+      msg.dig('extendedTextMessage', 'text') || msg.dig(:extendedTextMessage, :text) ||
+      Whatsapp::EvolutionInteractiveContent.text_for(msg)
   end
 
   def evolution_caption(msg, ev_type)
@@ -242,9 +246,16 @@ class Whatsapp::IncomingMessageEvolutionService < Whatsapp::IncomingMessageBaseS
   end
 
   def evolution_quoted_id(msg)
-    ext = msg['extendedTextMessage'].presence || msg[:extendedTextMessage].presence
-    ctx = ext&.dig('contextInfo') || ext&.dig(:contextInfo)
-    ctx&.dig('stanzaId') || ctx&.dig(:stanzaId)
+    QUOTING_MESSAGE_KEYS.each do |key|
+      sub = msg[key].presence || msg[key.to_sym].presence
+      next if sub.blank?
+
+      ctx = sub['contextInfo'] || sub[:contextInfo]
+      stanza_id = ctx&.dig('stanzaId') || ctx&.dig(:stanzaId)
+      return stanza_id if stanza_id.present?
+    end
+
+    nil
   end
 
   def download_attachment_file(attachment_payload)
